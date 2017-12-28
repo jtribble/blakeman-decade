@@ -1,4 +1,5 @@
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
@@ -36,6 +37,7 @@ module.exports = {
     new CleanWebpackPlugin(['dist'], {
       exclude: 'README.md'
     }),
+    new CopyWebpackPlugin([ { from: 'src/assets', to: 'assets' } ]),
     new HtmlWebpackPlugin({
       title: 'Together Through Life'
     }),
