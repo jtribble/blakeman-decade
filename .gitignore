@@ -4,5 +4,6 @@ dist
 .idea
 *.log
 .npm
+.DS_Store
 .eslintcache
 .env
