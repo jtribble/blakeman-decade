@@ -1,17 +1,9 @@
 import React, {Component} from 'react';
 import * as R from 'ramda';
 
-import Row from './Row';
-
-const ROW_FOCUSED_RATIO = 0.85;
-const ROW_UNFOCUSED_RATIO = 0.25;
-const ROW_MARGIN_RATIO = 0.03;
+import Row, {getRowFocusedHeight, getRowUnfocusedHeight, getRowMargin} from './Row';
 
 const YEARS = ['2008', '2009', '2010', '2011', '2012'];
-
-const getRowFocusedHeight = windowHeight => ROW_FOCUSED_RATIO * windowHeight;
-const getRowUnfocusedHeight = windowHeight => ROW_UNFOCUSED_RATIO * windowHeight;
-const getRowMargin = windowHeight =>  ROW_MARGIN_RATIO * windowHeight;
 
 const getFocusedIndex = (windowHeight, scrollY) => R.pipe(
   () => [
@@ -62,14 +54,6 @@ export default class Years extends Component {
     });
   }
 
-  static getRowStyles(windowHeight, scrollY, year) {
-    return {
-      height: getIsFocused(windowHeight, scrollY, year) ? getRowFocusedHeight(windowHeight) : getRowUnfocusedHeight(windowHeight),
-      marginBottom: getRowMargin(windowHeight),
-      marginTop: getRowMargin(windowHeight)
-    };
-  }
-
   render() {
     const { scrollY, windowHeight, windowWidth } = this.state;
     return (
@@ -78,13 +62,12 @@ export default class Years extends Component {
           year =>
             <Row
               isFocused={getIsFocused(windowHeight, scrollY, year)}
-              style={Years.getRowStyles(windowHeight, scrollY, year)}
               windowHeight={windowHeight}
               year={year}
               />,
           YEARS
         )}
-        <div style={{ height: getRowMargin(windowHeight) }} />
+        <div style={{ height: getRowMargin(windowHeight) * 2 }} />
       </div>
     );
   }
