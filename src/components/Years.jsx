@@ -1,21 +1,21 @@
 import React, {Component} from 'react';
 import * as R from 'ramda';
 
-import Row, {getRowFocusedHeight, getRowUnfocusedHeight, getRowMargin} from './Row';
+import Row, {getRowFocusedHeight, getRowHeaderHeight, getRowUnfocusedHeight, getRowMargin} from './Row';
 
 const YEARS = ['2008', '2009', '2010', '2011', '2012'];
 
 const getFocusedIndex = (windowHeight, scrollY) => R.pipe(
   () => [
     scrollY + windowHeight / 2,
-    getRowMargin(windowHeight) * 2 + getRowUnfocusedHeight(windowHeight),
-    getRowMargin(windowHeight) * 2 + getRowFocusedHeight(windowHeight)
+    getRowMargin(windowHeight) + getRowUnfocusedHeight(windowHeight) + getRowHeaderHeight(windowHeight),
+    getRowMargin(windowHeight) + getRowFocusedHeight(windowHeight) + getRowHeaderHeight(windowHeight)
   ],
   ([middleY, totalUnfocusedHeight, totalFocusedHeight]) => R.reduce(
     ([sum, index], _) => middleY < sum || sum === -1
       ? [-1, index]
       : [sum + totalUnfocusedHeight, index + 1],
-    [totalFocusedHeight / 1.5, 0],
+    [totalFocusedHeight / 1, 0],
     YEARS
   ),
   ([_, index]) => R.min(index, R.length(YEARS) - 1)
@@ -67,7 +67,6 @@ export default class Years extends Component {
               />,
           YEARS
         )}
-        <div style={{ height: getRowMargin(windowHeight) * 2 }} />
       </div>
     );
   }
