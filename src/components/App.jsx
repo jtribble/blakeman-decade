@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {BrowserRouter as Router, Route} from 'react-router-dom'
 
 import Intro from './Intro';
-import Year from './Year';
+import Years from './Years';
 
 export default class App extends Component {
   render() {
@@ -10,7 +10,7 @@ export default class App extends Component {
       <Router>
         <div className="root">
           <Route exact path="/" component={Intro} />
-          <Route path="/:year" component={Year} />
+          <Route path="/years" component={Years} />
         </div>
       </Router>
     );
