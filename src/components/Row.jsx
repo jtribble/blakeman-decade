@@ -4,7 +4,6 @@ import { Motion, spring } from 'react-motion';
 
 import { getMediumImagePaths, getSmallImagePaths } from '../modules/images';
 
-
 const ROW_FOCUSED_RATIO = 0.8;
 const ROW_HEADER_RATIO = 0.05;
 const ROW_UNFOCUSED_RATIO = 0.79;
@@ -18,6 +17,18 @@ export const getRowMargin = windowHeight =>  ROW_MARGIN_RATIO * windowHeight;
 const getImageMargin = windowHeight => IMAGE_MARGIN_RATIO * windowHeight;
 
 export default class Row extends Component {
+  constructor(props) {
+    super(props);
+    this.onScroll = this.onScroll.bind(this);
+    this.state = {
+      curImageIndex: 0
+    };
+  }
+
+  onScroll(event) {
+    console.log(event);
+  }
+
   static getStyles({ isFocused, style, windowHeight }) {
     return {
       display: 'flex',
@@ -72,7 +83,7 @@ export default class Row extends Component {
         {({blur, height}) => (
           <div>
             <h1 style={Row.getHeaderStyles(windowHeight, blur)}>{year}</h1>
-            <div style={{ height, ...Row.getStyles(this.props)}}>
+            <div onScroll={this.onScroll} style={{ height, ...Row.getStyles(this.props)}}>
               {R.map(
                 path => (
                   <div key={path} style={Row.getImageWrapperStyles(windowHeight)}>

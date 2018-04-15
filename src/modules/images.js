@@ -7,5 +7,10 @@ export const getImagePaths = size => year => R.pipe(
   R.map(i => `/assets/${year}/${size}/${year}-${i}.jpg`)
 )(COUNT_BY_YEAR[year]);
 
+export const getValidYears = () => R.pipe(
+  R.filter(R.lt(0)),
+  R.keys,
+)(COUNT_BY_YEAR);
+
 export const getSmallImagePaths = getImagePaths('sm');
 export const getMediumImagePaths = getImagePaths('med');
