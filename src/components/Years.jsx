@@ -3,12 +3,6 @@ import * as R from "ramda";
 import { AutoSizer, Grid } from "react-virtualized";
 
 import { getValidYears, getSmallImagePaths } from "../modules/images";
-import Row, {
-  getRowFocusedHeight,
-  getRowHeaderHeight,
-  getRowUnfocusedHeight,
-  getRowMargin
-} from "./Row";
 
 const YEARS = getValidYears();
 
@@ -34,32 +28,6 @@ const cellRenderer = ({ rowIndex, onHover }) => ({
     </div>
   </div>
 );
-
-// const getFocusedIndex = (windowHeight, scrollY) =>
-//   R.pipe(
-//     () => [
-//       scrollY + windowHeight / 2,
-//       getRowMargin(windowHeight) +
-//         getRowUnfocusedHeight(windowHeight) +
-//         getRowHeaderHeight(windowHeight),
-//       getRowMargin(windowHeight) +
-//         getRowFocusedHeight(windowHeight) +
-//         getRowHeaderHeight(windowHeight)
-//     ],
-//     ([middleY, totalUnfocusedHeight, totalFocusedHeight]) =>
-//       R.reduce(
-//         ([sum, index], _) =>
-//           middleY < sum || sum === -1
-//             ? [-1, index]
-//             : [sum + totalUnfocusedHeight, index + 1],
-//         [totalFocusedHeight, 0],
-//         YEARS
-//       ),
-//     ([_, index]) => R.min(index, R.length(YEARS) - 1)
-//   )();
-
-// const getIsFocused = (windowHeight, scrollY, year) =>
-//   YEARS[getFocusedIndex(windowHeight, scrollY)] === year;
 
 export default class Years extends Component {
   constructor(props) {
