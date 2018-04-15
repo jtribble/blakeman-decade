@@ -7,3 +7,6 @@ dist
 .DS_Store
 .eslintcache
 .env
+lib
+public/assets/
+public/bundle.js

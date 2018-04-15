@@ -1,21 +1,21 @@
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const path = require('path');
-const webpack = require('webpack');
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
+const webpack = require("webpack");
 
 module.exports = {
-  entry: './src/index.js',
+  entry: "./src/Main.bs.js",
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    path: path.resolve(__dirname, "public"),
+    filename: "bundle.js"
   },
   resolve: {
-    extensions: ['.js', '.jsx', '.json', '.css']
+    extensions: [".js", ".jsx", ".json", ".css"]
   },
-  devtool: 'inline-source-map',
+  devtool: "inline-source-map",
   devServer: {
-    contentBase: './dist',
+    contentBase: "./dist",
     historyApiFallback: true,
     hot: true
   },
@@ -24,22 +24,26 @@ module.exports = {
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        loader: "babel-loader"
       },
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        loaders: ['style-loader', 'css-loader?importLoaders=1', 'postcss-loader']
+        loaders: [
+          "style-loader",
+          "css-loader?importLoaders=1",
+          "postcss-loader"
+        ]
       }
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(['dist'], {
-      exclude: 'README.md'
+    new CleanWebpackPlugin(["dist"], {
+      exclude: "README.md"
     }),
-    new CopyWebpackPlugin([ { from: 'src/assets', to: 'assets' } ]),
+    new CopyWebpackPlugin([{ from: "src/assets", to: "assets" }]),
     new HtmlWebpackPlugin({
-      title: 'Together Through Life'
+      title: "Together Through Life"
     }),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin()
