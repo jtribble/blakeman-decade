@@ -43,4 +43,7 @@ const DIMENSIONS_BY_ID_BY_YEAR = R.reduce(
   years
 );
 
-console.log(DIMENSIONS_BY_ID_BY_YEAR);
+fs.writeFileSync(
+  path.join(__dirname, "..", "src", "constants", "image-metadata.json"),
+  JSON.stringify(DIMENSIONS_BY_ID_BY_YEAR, null, 2)
+);
