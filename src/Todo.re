@@ -1,4 +1,3 @@
-
 let component = ReasonReact.statelessComponent("TodoApp");
 
 let make = _children => {

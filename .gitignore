@@ -10,3 +10,4 @@ dist
 lib
 public/assets/
 public/bundle.js
+.vscode/
