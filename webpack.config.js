@@ -41,7 +41,10 @@ module.exports = {
     new CleanWebpackPlugin(["dist"], {
       exclude: "README.md"
     }),
-    new CopyWebpackPlugin([{ from: "src/assets", to: "assets" }]),
+    new CopyWebpackPlugin([
+      { from: "src/assets", to: "assets" },
+      { from: "public/index.css", to: "index.css" }
+    ]),
     new HtmlWebpackPlugin({
       title: "Together Through Life",
       template: "./public/index.html"

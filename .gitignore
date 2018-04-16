@@ -8,6 +8,7 @@ dist
 .eslintcache
 .env
 *.bs.js
+.bsb.lock
 lib
 public/assets/
 public/bundle.js
