@@ -7,7 +7,7 @@ const webpack = require("webpack");
 module.exports = {
   entry: "./src/Main.bs.js",
   output: {
-    path: path.resolve(__dirname, "public"),
+    path: path.resolve(__dirname, "dist"),
     filename: "bundle.js"
   },
   resolve: {
@@ -43,7 +43,8 @@ module.exports = {
     }),
     new CopyWebpackPlugin([{ from: "src/assets", to: "assets" }]),
     new HtmlWebpackPlugin({
-      title: "Together Through Life"
+      title: "Together Through Life",
+      template: "./public/index.html"
     }),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin()
