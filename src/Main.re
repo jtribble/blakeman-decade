@@ -1,1 +1,1 @@
-ReactDOMRe.renderToElementWithId(<Todo />, "root");
+ReactDOMRe.renderToElementWithId(<App />, "root");

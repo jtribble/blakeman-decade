@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "bsb -make-world",
+    "build:watch": "bsb -make-world -w",
     "start": "bsb -make-world -w && yarn dev-server",
     "clean": "bsb -clean-world",
     "webpack": "webpack -w",
