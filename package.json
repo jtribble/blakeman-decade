@@ -9,12 +9,11 @@
   },
   "scripts": {
     "build": "bsb -make-world",
+    "build:clean": "bsb -clean-world",
     "build:watch": "bsb -make-world -w",
-    "start": "bsb -make-world -w && yarn dev-server",
-    "clean": "bsb -clean-world",
+    "start": "webpack-dev-server --open",
     "webpack": "webpack -w",
-    "debug": "webpack -d",
-    "dev-server": "webpack-dev-server --open"
+    "debug": "webpack -d"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,13 @@
 module Grid = {
+  type scrollPayload = {
+    .
+    clientHeight: float,
+    clientWidth: float,
+    scrollHeight: float,
+    scrollLeft: float,
+    scrollTop: float,
+    scrollWidth: float,
+  };
   [@bs.module "react-virtualized"]
   external grid : ReasonReact.reactClass = "Grid";
   let make =
@@ -8,11 +17,11 @@ module Grid = {
         ~columnCount: int,
         ~columnWidth,
         ~height: float,
-        ~key: string,
+        ~key: option(string)=?,
         ~rowHeight,
         ~rowCount: int,
-        ~onScroll,
-        ~scrollLeft,
+        ~onScroll: option(scrollPayload => unit)=?,
+        ~scrollLeft: option(float)=?,
         ~width,
         children,
       ) =>
@@ -24,11 +33,11 @@ module Grid = {
         "columnCount": columnCount,
         "columnWidth": columnWidth,
         "height": height,
-        "key": key,
+        "key": key |> Js.Nullable.fromOption,
         "rowHeight": rowHeight,
         "rowCount": rowCount,
-        "onScroll": onScroll,
-        "scrollLeft": scrollLeft,
+        "onScroll": onScroll |> Js.Nullable.fromOption,
+        "scrollLeft": scrollLeft |> Js.Nullable.fromOption,
         "width": width,
       },
       children,

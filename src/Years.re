@@ -8,6 +8,11 @@ module Window = {
   external removeEventListener : (string, unit => unit, bool) => unit = "";
 };
 
+let yearRenderer = props =>
+  <div key=props##key style=props##style>
+    (ReasonReact.stringToElement(props##rowIndex))
+  </div>;
+
 /* State declaration */
 type state = {
   focusedRowIndex: int,
@@ -69,5 +74,15 @@ let make = _children => {
         ),
     ),
   ],
-  render: _self => <div />,
+  render: self =>
+    <ReactVirtualized.Grid
+      cellRenderer=yearRenderer
+      className="years"
+      columnCount=1
+      columnWidth=self.state.windowWidth
+      height=self.state.windowHeight
+      rowCount=5
+      rowHeight=500
+      width=self.state.windowWidth
+    />,
 };
