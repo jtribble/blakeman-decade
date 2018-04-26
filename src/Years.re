@@ -8,29 +8,49 @@ module Window = {
   external removeEventListener : (string, unit => unit, bool) => unit = "";
 };
 
-let yearRenderer = props =>
+let years = [|"2008", "2009", "2010", "2011", "2012"|];
+
+let photoRenderer = props =>
   <div key=props##key style=props##style>
-    (ReasonReact.stringToElement(props##rowIndex))
+    (ReasonReact.stringToElement(props##columnIndex))
   </div>;
 
-/* State declaration */
+let yearRenderer = (windowWidth, scrollLeftByYear, onScrollLeft, props) =>
+  <div key=props##key style=props##style>
+    <ReactVirtualized.Grid
+      cellRenderer=photoRenderer
+      className=("year-" ++ props##key)
+      columnCount=50
+      columnWidth=750
+      height=500.0
+      onScroll=(
+        scrollEvent =>
+          onScrollLeft(years[props##rowIndex], scrollEvent##scrollLeft)
+      )
+      rowHeight=500
+      rowCount=1
+      scrollLeft=(
+        Belt.Map.String.getWithDefault(
+          scrollLeftByYear,
+          years[props##rowIndex],
+          0.0,
+        )
+      )
+      width=windowWidth
+    />
+  </div>;
+
 type state = {
   focusedRowIndex: int,
-  scrollLeftByYear: {
-    .
-    "2008": float,
-    "2009": float,
-    "2010": float,
-    "2011": float,
-    "2012": float,
-  },
+  scrollLeftByYear: Belt.Map.String.t(float),
   scrollY: float,
   windowHeight: float,
   windowWidth: float,
 };
 
 type action =
-  | SetWindowSize;
+  | SetWindowSize
+  | SetScrollLeft(string, float);
 
 let component = ReasonReact.reducerComponent("Years");
 
@@ -38,13 +58,14 @@ let make = _children => {
   ...component,
   initialState: () => {
     focusedRowIndex: 0,
-    scrollLeftByYear: {
-      "2008": 0.0,
-      "2009": 0.0,
-      "2010": 0.0,
-      "2011": 0.0,
-      "2012": 0.0,
-    },
+    scrollLeftByYear:
+      Belt.Map.String.fromArray([|
+        ("2008", 0.0),
+        ("2009", 0.0),
+        ("2010", 0.0),
+        ("2011", 0.0),
+        ("2012", 0.0),
+      |]),
     scrollY: Window.pageYOffset,
     windowHeight: Window.innerHeight,
     windowWidth: Window.innerWidth,
@@ -56,6 +77,12 @@ let make = _children => {
         ...state,
         windowHeight: Window.innerHeight,
         windowWidth: Window.innerWidth,
+      })
+    | SetScrollLeft(year, scroll) =>
+      ReasonReact.Update({
+        ...state,
+        scrollLeftByYear:
+          Belt.Map.String.set(state.scrollLeftByYear, year, scroll),
       })
     },
   subscriptions: self => [
@@ -76,7 +103,12 @@ let make = _children => {
   ],
   render: self =>
     <ReactVirtualized.Grid
-      cellRenderer=yearRenderer
+      cellRenderer=(
+        yearRenderer(
+          self.state.windowWidth, self.state.scrollLeftByYear, (year, scroll) =>
+          self.send(SetScrollLeft(year, scroll))
+        )
+      )
       className="years"
       columnCount=1
       columnWidth=self.state.windowWidth

@@ -1,12 +1,12 @@
 module Grid = {
   type scrollPayload = {
     .
-    clientHeight: float,
-    clientWidth: float,
-    scrollHeight: float,
-    scrollLeft: float,
-    scrollTop: float,
-    scrollWidth: float,
+    "clientHeight": float,
+    "clientWidth": float,
+    "scrollHeight": float,
+    "scrollLeft": float,
+    "scrollTop": float,
+    "scrollWidth": float,
   };
   [@bs.module "react-virtualized"]
   external grid : ReasonReact.reactClass = "Grid";
