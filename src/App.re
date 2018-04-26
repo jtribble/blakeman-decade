@@ -40,7 +40,7 @@ let make = _children => {
   ],
   render: ({state: {nowShowing}}) =>
     switch (nowShowing) {
-    | Years => <div> (ReasonReact.stringToElement("Years!")) </div>
-    | Intro => <div> <Intro /> </div>
+    | Years => <Years />
+    | Intro => <Intro />
     },
 };
