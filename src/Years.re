@@ -8,17 +8,85 @@ module Window = {
   external removeEventListener : (string, unit => unit, bool) => unit = "";
 };
 
+module ImageMetadata = {
+  [@bs.val] [@bs.module]
+  external imageMetadata :
+    Js.Dict.t(
+      Js.Dict.t(
+        {
+          .
+          "height": int,
+          "width": int,
+        },
+      ),
+    ) =
+    "./constants/image-metadata.json";
+  let countByYear =
+    imageMetadata
+    |> Js.Dict.keys
+    |> Array.map(key =>
+         (
+           key,
+           Js.Dict.get(imageMetadata, key)
+           |> Js.Option.getExn
+           |> Js.Dict.keys
+           |> Array.length,
+         )
+       )
+    |> Belt.Map.String.fromArray;
+};
+
 let years = [|"2008", "2009", "2010", "2011", "2012"|];
 
-let photoRenderer = props =>
+let photoContainerStyle =
+  ReactDOMRe.Style.make(
+    ~boxShadow="0px 3px 15px rgba(0, 0, 0, 0.2)",
+    ~height="100%",
+    ~position="relative",
+    ~width="auto",
+    (),
+  );
+
+let photoStyle = ReactDOMRe.Style.make(~height="100%", ());
+
+let getImagePaths = (size, year) =>
+  Belt.Map.String.getWithDefault(ImageMetadata.countByYear, year, 0)
+  |> Belt.Array.makeBy(_, i => i + 1)
+  |> Belt.Array.map(_, i =>
+       "/assets/"
+       ++ year
+       ++ "/"
+       ++ size
+       ++ "/"
+       ++ year
+       ++ "-"
+       ++ string_of_int(i)
+       ++ ".jpg"
+     );
+
+let getSmallImagePaths = getImagePaths("sm");
+
+let photoRenderer = (rowIndex, onHover, props) =>
   <div key=props##key style=props##style>
-    (ReasonReact.stringToElement(props##columnIndex))
+    <div onMouseOver=onHover style=photoContainerStyle>
+      <img
+        src=(
+          years[rowIndex]
+          |> getSmallImagePaths
+          |> Belt.Array.getExn(_, props##columnIndex)
+        )
+        style=photoStyle
+      />
+    </div>
   </div>;
 
-let yearRenderer = (windowWidth, scrollLeftByYear, onScrollLeft, props) =>
+let yearRenderer =
+    (windowWidth, scrollLeftByYear, onHover, onScrollLeft, props) =>
   <div key=props##key style=props##style>
     <ReactVirtualized.Grid
-      cellRenderer=photoRenderer
+      cellRenderer=(
+        photoRenderer(props##rowIndex, (_) => onHover(props##rowIndex))
+      )
       className=("year-" ++ props##key)
       columnCount=50
       columnWidth=750
@@ -49,6 +117,7 @@ type state = {
 };
 
 type action =
+  | FocusRow(int)
   | SetWindowSize
   | SetScrollLeft(string, float);
 
@@ -72,6 +141,8 @@ let make = _children => {
   },
   reducer: (action, state) =>
     switch (action) {
+    | FocusRow(index) =>
+      ReasonReact.Update({...state, focusedRowIndex: index})
     | SetWindowSize =>
       ReasonReact.Update({
         ...state,
@@ -105,8 +176,10 @@ let make = _children => {
     <ReactVirtualized.Grid
       cellRenderer=(
         yearRenderer(
-          self.state.windowWidth, self.state.scrollLeftByYear, (year, scroll) =>
-          self.send(SetScrollLeft(year, scroll))
+          self.state.windowWidth,
+          self.state.scrollLeftByYear,
+          index => self.send(FocusRow(index)),
+          (year, scroll) => self.send(SetScrollLeft(year, scroll)),
         )
       )
       className="years"
