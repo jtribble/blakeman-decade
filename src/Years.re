@@ -1,13 +1,24 @@
+module Constants = {
+  let rowHeight = 350.0;
+  let columnWidth = 600.0;
+  let imagePadding = 30.0;
+  let imageHeight = rowHeight -. 2.0 *. imagePadding;
+};
+
 let photoContainerStyle =
   ReactDOMRe.Style.make(
-    ~boxShadow="0px 3px 15px rgba(0, 0, 0, 0.2)",
     ~height="100%",
+    ~padding="30px",
     ~position="relative",
     ~width="auto",
     (),
   );
 
-let photoStyle = ReactDOMRe.Style.make(~height="100%", ());
+let photoStyle =
+  ReactDOMRe.Style.make(
+    ~height=(Constants.imageHeight |> string_of_float) ++ "px",
+    (),
+  );
 
 let photoRenderer = (rowIndex, onHover, props) =>
   <div key=props##key style=props##style>
@@ -23,36 +34,42 @@ let photoRenderer = (rowIndex, onHover, props) =>
     </div>
   </div>;
 
+let getColumnWidth = (rowIndex, columnInfo) =>
+  ImageMetadata.getImageDimensions(
+    ImageMetadata.years[rowIndex],
+    columnInfo##index + 1 |> string_of_int,
+  )
+  |> (
+    dimens => (dimens##height |> float_of_int, dimens##width |> float_of_int)
+  )
+  |> (
+    ((h, w)) =>
+      w *. Constants.imageHeight /. h +. 2.0 *. Constants.imagePadding
+  );
+
 let yearRenderer =
-    (windowWidth, scrollLeftByYear, onHover, onScrollLeft, props) =>
+    (windowWidth, scrollLeftByYear, onHover, onScrollLeft, props) => {
+  let year = ImageMetadata.years[props##rowIndex];
   <div key=props##key style=props##style>
     <ReactVirtualized.Grid
       cellRenderer=(
         photoRenderer(props##rowIndex, (_) => onHover(props##rowIndex))
       )
       className=("year-" ++ props##key)
-      columnCount=50
-      columnWidth=750
-      height=500.0
-      onScroll=(
-        scrollEvent =>
-          onScrollLeft(
-            ImageMetadata.years[props##rowIndex],
-            scrollEvent##scrollLeft,
-          )
+      columnCount=(
+        ImageMetadata.countByYear
+        |> Belt.Map.String.getWithDefault(_, year, 0)
       )
-      rowHeight=500
+      columnWidth=(getColumnWidth(props##rowIndex))
+      height=Constants.rowHeight
+      onScroll=(scrollEvent => onScrollLeft(year, scrollEvent##scrollLeft))
+      rowHeight=Constants.rowHeight
       rowCount=1
-      scrollLeft=(
-        Belt.Map.String.getWithDefault(
-          scrollLeftByYear,
-          ImageMetadata.years[props##rowIndex],
-          0.0,
-        )
-      )
+      scrollLeft=(Belt.Map.String.getWithDefault(scrollLeftByYear, year, 0.0))
       width=windowWidth
     />
   </div>;
+};
 
 type state = {
   focusedRowIndex: int,
@@ -128,8 +145,8 @@ let make = _children => {
       columnCount=1
       columnWidth=self.state.windowWidth
       height=self.state.windowHeight
-      rowCount=5
-      rowHeight=500
+      rowCount=(ImageMetadata.years |> Array.length)
+      rowHeight=Constants.rowHeight
       width=self.state.windowWidth
     />,
 };

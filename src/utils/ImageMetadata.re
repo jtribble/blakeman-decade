@@ -9,7 +9,7 @@ external imageMetadata :
       },
     ),
   ) =
-  "./constants/image-metadata.json";
+  "../constants/image-metadata.json";
 
 let countByYear =
   imageMetadata
@@ -43,3 +43,17 @@ let getImagePaths = (size, year) =>
      );
 
 let getSmallImagePaths = getImagePaths("sm");
+
+let fallbackDimens = {"height": 0, "width": 0};
+
+let getImageDimensions = (year, id) =>
+  imageMetadata
+  |> Js.Dict.get(_, year)
+  |> (
+    maybeYearMetadata =>
+      switch (maybeYearMetadata) {
+      | Some(yearDict) =>
+        Js.Dict.get(yearDict, id) |> Js.Option.getWithDefault(fallbackDimens)
+      | None => fallbackDimens
+      }
+  );
