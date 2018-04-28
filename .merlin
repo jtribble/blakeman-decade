@@ -11,4 +11,6 @@ S /Users/kyle/git-projects/blakeman-decade/node_modules/reason-react/lib/ocaml
 B /Users/kyle/git-projects/blakeman-decade/node_modules/reason-react/lib/ocaml
 S src
 B lib/bs/src
+S src/utils
+B lib/bs/src/utils
 ####BSB GENERATED: NO EDIT}

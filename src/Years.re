@@ -1,43 +1,3 @@
-module Window = {
-  [@bs.val] [@bs.scope "window"] external innerHeight : float = "";
-  [@bs.val] [@bs.scope "window"] external innerWidth : float = "";
-  [@bs.val] [@bs.scope "window"] external pageYOffset : float = "";
-  [@bs.val] [@bs.scope "window"]
-  external addEventListener : (string, unit => unit, bool) => unit = "";
-  [@bs.val] [@bs.scope "window"]
-  external removeEventListener : (string, unit => unit, bool) => unit = "";
-};
-
-module ImageMetadata = {
-  [@bs.val] [@bs.module]
-  external imageMetadata :
-    Js.Dict.t(
-      Js.Dict.t(
-        {
-          .
-          "height": int,
-          "width": int,
-        },
-      ),
-    ) =
-    "./constants/image-metadata.json";
-  let countByYear =
-    imageMetadata
-    |> Js.Dict.keys
-    |> Array.map(key =>
-         (
-           key,
-           Js.Dict.get(imageMetadata, key)
-           |> Js.Option.getExn
-           |> Js.Dict.keys
-           |> Array.length,
-         )
-       )
-    |> Belt.Map.String.fromArray;
-};
-
-let years = [|"2008", "2009", "2010", "2011", "2012"|];
-
 let photoContainerStyle =
   ReactDOMRe.Style.make(
     ~boxShadow="0px 3px 15px rgba(0, 0, 0, 0.2)",
@@ -49,30 +9,13 @@ let photoContainerStyle =
 
 let photoStyle = ReactDOMRe.Style.make(~height="100%", ());
 
-let getImagePaths = (size, year) =>
-  Belt.Map.String.getWithDefault(ImageMetadata.countByYear, year, 0)
-  |> Belt.Array.makeBy(_, i => i + 1)
-  |> Belt.Array.map(_, i =>
-       "/assets/"
-       ++ year
-       ++ "/"
-       ++ size
-       ++ "/"
-       ++ year
-       ++ "-"
-       ++ string_of_int(i)
-       ++ ".jpg"
-     );
-
-let getSmallImagePaths = getImagePaths("sm");
-
 let photoRenderer = (rowIndex, onHover, props) =>
   <div key=props##key style=props##style>
     <div onMouseOver=onHover style=photoContainerStyle>
       <img
         src=(
-          years[rowIndex]
-          |> getSmallImagePaths
+          ImageMetadata.years[rowIndex]
+          |> ImageMetadata.getSmallImagePaths
           |> Belt.Array.getExn(_, props##columnIndex)
         )
         style=photoStyle
@@ -93,14 +36,17 @@ let yearRenderer =
       height=500.0
       onScroll=(
         scrollEvent =>
-          onScrollLeft(years[props##rowIndex], scrollEvent##scrollLeft)
+          onScrollLeft(
+            ImageMetadata.years[props##rowIndex],
+            scrollEvent##scrollLeft,
+          )
       )
       rowHeight=500
       rowCount=1
       scrollLeft=(
         Belt.Map.String.getWithDefault(
           scrollLeftByYear,
-          years[props##rowIndex],
+          ImageMetadata.years[props##rowIndex],
           0.0,
         )
       )
@@ -128,13 +74,9 @@ let make = _children => {
   initialState: () => {
     focusedRowIndex: 0,
     scrollLeftByYear:
-      Belt.Map.String.fromArray([|
-        ("2008", 0.0),
-        ("2009", 0.0),
-        ("2010", 0.0),
-        ("2011", 0.0),
-        ("2012", 0.0),
-      |]),
+      ImageMetadata.years
+      |> Array.map(year => (year, 0.0))
+      |> Belt.Map.String.fromArray,
     scrollY: Window.pageYOffset,
     windowHeight: Window.innerHeight,
     windowWidth: Window.innerWidth,
