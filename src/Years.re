@@ -1,51 +1,68 @@
 module Constants = {
   let rowHeight = 350.0;
   let columnWidth = 600.0;
-  let imagePadding = 30.0;
-  let imageHeight = rowHeight -. 2.0 *. imagePadding;
+  let photoPadding = 30.0;
+  let photoHeight = rowHeight -. 2.0 *. photoPadding;
+  let imagePadding = 20.0;
+  let imageHeight = photoHeight -. 2.0 *. imagePadding;
 };
+
+let getImageWidth = (rowIndex, columnIndex) => ImageMetadata.getImageDimensions(
+  ImageMetadata.years[rowIndex],
+  columnIndex + 1 |> string_of_int,
+)
+|> (dimens => (dimens##height |> float_of_int, dimens##width|> float_of_int))
+|> (((h, w)) => w *. Constants.imageHeight /. h);
+
+let getColumnWidth = (rowIndex, columnInfo) =>
+   getImageWidth(rowIndex, columnInfo##index) +. 2.0 *. (Constants.photoPadding +. Constants.imagePadding);
 
 let photoContainerStyle =
   ReactDOMRe.Style.make(
     ~height="100%",
-    ~padding="30px",
+    ~padding=string_of_int(Constants.photoPadding |> int_of_float) ++ "px",
     ~position="relative",
     ~width="auto",
     (),
   );
 
-let photoStyle =
+let photoStyle = width =>
   ReactDOMRe.Style.make(
-    ~height=(Constants.imageHeight |> string_of_float) ++ "px",
+    ~alignItems="center",
+    ~backgroundColor="white",
+    ~boxShadow="0px 3px 15px rgba(0,0,0,0.2)",
+    ~display="flex",
+    ~justifyContent="center",
+    ~height=(Constants.photoHeight |> string_of_float) ++ "px",
+    ~margin=(Constants.imagePadding |> string_of_float) ++ "px",
+    ~width=(width |> string_of_float) ++ "px",
     (),
   );
 
-let photoRenderer = (rowIndex, onHover, props) =>
+let imageStyle = width =>
+  ReactDOMRe.Style.make(
+    ~height=(Constants.imageHeight |> string_of_float) ++ "px",
+    ~width=(width |> string_of_float) ++ "px",
+    (),
+  );
+
+let photoRenderer = (rowIndex, onHover, props) => {
+  let imageWidth =getImageWidth(rowIndex, props##columnIndex);
   <div key=props##key style=props##style>
     <div onMouseOver=onHover style=photoContainerStyle>
-      <img
-        src=(
-          ImageMetadata.years[rowIndex]
-          |> ImageMetadata.getSmallImagePaths
-          |> Belt.Array.getExn(_, props##columnIndex)
-        )
-        style=photoStyle
-      />
+      <div style=photoStyle(imageWidth +. 2.0 *. Constants.imagePadding)>
+        <img
+          src=(
+            ImageMetadata.years[rowIndex]
+            |> ImageMetadata.getSmallImagePaths
+            |> Belt.Array.getExn(_, props##columnIndex)
+          )
+          style=(imageWidth |> imageStyle)
+        />
+      </div>
     </div>
-  </div>;
-
-let getColumnWidth = (rowIndex, columnInfo) =>
-  ImageMetadata.getImageDimensions(
-    ImageMetadata.years[rowIndex],
-    columnInfo##index + 1 |> string_of_int,
-  )
-  |> (
-    dimens => (dimens##height |> float_of_int, dimens##width |> float_of_int)
-  )
-  |> (
-    ((h, w)) =>
-      w *. Constants.imageHeight /. h +. 2.0 *. Constants.imagePadding
-  );
+  </div>
+};
 
 let yearRenderer =
     (windowWidth, scrollLeftByYear, onHover, onScrollLeft, props) => {
@@ -61,7 +78,7 @@ let yearRenderer =
         |> Belt.Map.String.getWithDefault(_, year, 0)
       )
       columnWidth=(getColumnWidth(props##rowIndex))
-      height=Constants.rowHeight
+      height=(Constants.rowHeight)
       onScroll=(scrollEvent => onScrollLeft(year, scrollEvent##scrollLeft))
       rowHeight=Constants.rowHeight
       rowCount=1

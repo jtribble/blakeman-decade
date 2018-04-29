@@ -2,13 +2,16 @@
  * Global Styles.
  */
 
-html, body, .root {
+html,
+body,
+.root {
   height: 100%;
   position: relative;
   width: 100%;
 }
 
 body {
-  font-family: 'EB Garamond', serif;
+  font-family: "EB Garamond", serif;
   font-size: 20px;
+  background-color: #f2f2f2;
 }
