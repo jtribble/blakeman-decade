@@ -1,12 +1,3 @@
-module Constants = {
-  let rowHeight = 350.0;
-  let columnWidth = 600.0;
-  let photoPadding = 30.0;
-  let photoHeight = rowHeight -. 2.0 *. photoPadding;
-  let imagePadding = 20.0;
-  let imageHeight = photoHeight -. 2.0 *. imagePadding;
-};
-
 let getImageWidth = (rowIndex, columnIndex) =>
   ImageMetadata.getImageDimensions(
     ImageMetadata.years[rowIndex],
@@ -44,14 +35,15 @@ let photoStyle = width =>
     (),
   );
 
-let imageStyle = width =>
+let imageStyle = (width, isFocused) =>
   ReactDOMRe.Style.make(
     ~height=(Constants.imageHeight |> string_of_float) ++ "px",
+    ~opacity=isFocused ? "1" : "0.8",
     ~width=(width |> string_of_float) ++ "px",
     (),
   );
 
-let photoRenderer = (~rowIndex, ~onHover, props) => {
+let photoRenderer = (~rowIndex, ~focusedRowIndex, ~onHover, props) => {
   let imageWidth = getImageWidth(rowIndex, props##columnIndex);
   <div key=props##key style=props##style>
     <div onMouseOver=onHover style=photoContainerStyle>
@@ -62,21 +54,44 @@ let photoRenderer = (~rowIndex, ~onHover, props) => {
             |> ImageMetadata.getSmallImagePaths
             |> Belt.Array.getExn(_, props##columnIndex)
           )
-          style=(imageWidth |> imageStyle)
+          style=(imageStyle(imageWidth, rowIndex == focusedRowIndex))
         />
       </div>
     </div>
   </div>;
 };
 
+let yearLabelStyle = isFocused =>
+  ReactDOMRe.Style.make(
+    ~position="relative",
+    ~top="15px",
+    ~left="30px",
+    ~color="#555",
+    ~fontSize="22px",
+    ~opacity=isFocused ? "1" : "0",
+    (),
+  );
+
 let yearRenderer =
-    (~width, ~scrollLeftByYear, ~onHoverRow, ~onScrollLeft, ~setRef, props) => {
-  let year = ImageMetadata.years[props##rowIndex];
+    (
+      ~width,
+      ~scrollLeftByYear,
+      ~onHoverPhoto,
+      ~onScrollLeft,
+      ~setRef,
+      ~focusedRowIndex,
+      props,
+    ) => {
+  let rowIndex = props##rowIndex;
+  let year = ImageMetadata.years[rowIndex];
   <div key=props##key style=props##style>
+    <span style=(focusedRowIndex == rowIndex |> yearLabelStyle)>
+      (ReasonReact.stringToElement(ImageMetadata.years[props##rowIndex]))
+    </span>
     <ReactVirtualized.Grid
       cellRenderer=(
-        photoRenderer(~rowIndex=props##rowIndex, ~onHover=(_) =>
-          onHoverRow(props##rowIndex)
+        photoRenderer(~rowIndex, ~focusedRowIndex, ~onHover=(_) =>
+          onHoverPhoto(rowIndex)
         )
       )
       className=("year-" ++ props##key)
@@ -84,7 +99,7 @@ let yearRenderer =
         ImageMetadata.countByYear
         |> Belt.Map.String.getWithDefault(_, year, 0)
       )
-      columnWidth=(getColumnWidth(props##rowIndex))
+      columnWidth=(getColumnWidth(rowIndex))
       height=Constants.rowHeight
       onScroll=(scrollEvent => onScrollLeft(year, scrollEvent##scrollLeft))
       ref=(setRef(year))
@@ -180,10 +195,11 @@ let make = _children => {
         yearRenderer(
           ~width=self.state.windowWidth,
           ~scrollLeftByYear=self.state.scrollLeftByYear,
-          ~onHoverRow=index => self.send(FocusRow(index)),
+          ~onHoverPhoto=index => self.send(FocusRow(index)),
           ~onScrollLeft=
             (year, scroll) => self.send(SetScrollLeft(year, scroll)),
           ~setRef=year => self.handle(setYearRef(year)),
+          ~focusedRowIndex=self.state.focusedRowIndex,
         )
       )
       className="years"
