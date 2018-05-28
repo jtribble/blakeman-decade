@@ -1,3 +1,20 @@
+let scrollRow = (~refByYears, ~year, ~scrollLeftByYear, ~scrollDelta) =>
+  refByYears^
+  |> Belt.Map.String.getExn(_, year)
+  |. Belt.Option.map(
+       ReactVirtualized.Grid.scrollToPosition(
+         _,
+         {
+           "scrollLeft":
+             Belt.Map.String.getExn(scrollLeftByYear, year)
+             |> (left => left +. scrollDelta)
+             |> Js.Math.max_float(0.0),
+           "scrollTop": 0.0,
+         },
+       ),
+     )
+  |> ignore;
+
 let component = ReasonReact.statelessComponent("Greeting");
 
 let make =
@@ -16,22 +33,7 @@ let make =
     <i
       className
       onClick=(
-        (_) =>
-          refByYears^
-          |> Belt.Map.String.getExn(_, year)
-          |. Belt.Option.map(
-               ReactVirtualized.Grid.scrollToPosition(
-                 _,
-                 {
-                   "scrollLeft":
-                     Belt.Map.String.getExn(scrollLeftByYear, year)
-                     |> (left => left +. scrollDelta)
-                     |> Js.Math.max_float(0.0),
-                   "scrollTop": 0.0,
-                 },
-               ),
-             )
-          |> ignore
+        (_) => scrollRow(~refByYears, ~year, ~scrollLeftByYear, ~scrollDelta)
       )
       style=(
         ReactDOMRe.Style.combine(

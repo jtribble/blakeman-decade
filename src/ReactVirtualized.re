@@ -16,6 +16,7 @@ module Grid = {
         ~className: string,
         ~columnCount: int,
         ~columnWidth,
+        ~containerStyle: option(ReactDOMRe.Style.t)=?,
         ~height: float,
         ~key: option(string)=?,
         ~rowHeight,
@@ -23,6 +24,7 @@ module Grid = {
         ~onScroll: option(scrollPayload => unit)=?,
         ~scrollLeft: option(float)=?,
         ~scrollToAlignment: option(string)=?,
+        ~style: option(ReactDOMRe.Style.t)=?,
         ~width,
         children,
       ) =>
@@ -33,6 +35,7 @@ module Grid = {
         "className": className,
         "columnCount": columnCount,
         "columnWidth": columnWidth,
+        "containerStyle": containerStyle |> Js.Nullable.fromOption,
         "height": height,
         "key": key |> Js.Nullable.fromOption,
         "rowHeight": rowHeight,
@@ -40,10 +43,23 @@ module Grid = {
         "onScroll": onScroll |> Js.Nullable.fromOption,
         "scrollLeft": scrollLeft |> Js.Nullable.fromOption,
         "scrollToAlignment": scrollToAlignment |> Js.Nullable.fromOption,
+        "style": style |> Js.Nullable.fromOption,
         "width": width,
       },
       children,
     );
+  [@bs.send]
+  external scrollToCell :
+    (
+      ReasonReact.reactRef,
+      {
+        .
+        "columnIndex": int,
+        "rowIndex": int,
+      }
+    ) =>
+    unit =
+    "";
   [@bs.send]
   external scrollToPosition :
     (

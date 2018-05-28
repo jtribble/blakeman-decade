@@ -131,6 +131,22 @@ let yearRenderer =
   </div>;
 };
 
+let ensureFocusedRowIsScrolled =
+    (~yearsRef, ~scrollLeftByYear, ~focusedRowIndex) =>
+  ReactVirtualized.Grid.scrollToCell(
+    yearsRef^ |> Belt.Option.getExn,
+    {
+      "columnIndex":
+        Belt.Map.String.getExn(
+          scrollLeftByYear,
+          ImageMetadata.years[focusedRowIndex],
+        )
+        |> (scrollLeft => scrollLeft /. 450.0)
+        |> int_of_float,
+      "rowIndex": focusedRowIndex,
+    },
+  );
+
 type state = {
   focusedRowIndex: int,
   refByYears: ref(Belt.Map.String.t(option(ReasonReact.reactRef))),
@@ -151,6 +167,7 @@ let setYearRef = (year, theRef, {ReasonReact.state}) =>
 
 type action =
   | FocusRow(int)
+  | KeyDown(int)
   | SetWindowSize
   | SetScrollLeft(string, float);
 
@@ -190,6 +207,72 @@ let make = _children => {
         scrollLeftByYear:
           Belt.Map.String.set(state.scrollLeftByYear, year, scroll),
       })
+    | KeyDown(keycode) =>
+      switch (keycode) {
+      | 40 =>
+        /* Down */
+        ReasonReact.UpdateWithSideEffects(
+          {
+            ...state,
+            focusedRowIndex:
+              Js.Math.min_int(
+                ImageMetadata.years |> Array.length |> (x => x - 1),
+                state.focusedRowIndex + 1,
+              ),
+          },
+          (
+            self =>
+              ensureFocusedRowIsScrolled(
+                ~yearsRef=self.state.yearsRef,
+                ~scrollLeftByYear=self.state.scrollLeftByYear,
+                ~focusedRowIndex=self.state.focusedRowIndex,
+              )
+          ),
+        )
+      | 38 =>
+        /* Up */
+        ReasonReact.UpdateWithSideEffects(
+          {
+            ...state,
+            focusedRowIndex: Js.Math.max_int(0, state.focusedRowIndex - 1),
+          },
+          (
+            self =>
+              ensureFocusedRowIsScrolled(
+                ~yearsRef=self.state.yearsRef,
+                ~scrollLeftByYear=self.state.scrollLeftByYear,
+                ~focusedRowIndex=self.state.focusedRowIndex,
+              )
+          ),
+        )
+      | 37 =>
+        /* Left */
+        ReasonReact.SideEffects(
+          (
+            self =>
+              ScrollButton.scrollRow(
+                ~refByYears=self.state.refByYears,
+                ~year=ImageMetadata.years[self.state.focusedRowIndex],
+                ~scrollLeftByYear=self.state.scrollLeftByYear,
+                ~scrollDelta=self.state.windowWidth *. (-0.7),
+              )
+          ),
+        )
+      | 39 =>
+        /* Left */
+        ReasonReact.SideEffects(
+          (
+            self =>
+              ScrollButton.scrollRow(
+                ~refByYears=self.state.refByYears,
+                ~year=ImageMetadata.years[self.state.focusedRowIndex],
+                ~scrollLeftByYear=self.state.scrollLeftByYear,
+                ~scrollDelta=self.state.windowWidth *. 0.7,
+              )
+          ),
+        )
+      | _ => ReasonReact.NoUpdate
+      }
     },
   subscriptions: self => [
     Sub(
@@ -204,6 +287,16 @@ let make = _children => {
           "resize",
           () => self.send(SetWindowSize),
           true,
+        ),
+    ),
+    Sub(
+      () =>
+        Body.addEventListener("keydown", event =>
+          self.send(KeyDown(event##keyCode))
+        ),
+      () =>
+        Body.removeEventListener("keydown", event =>
+          self.send(KeyDown(event##keyCode))
         ),
     ),
   ],
