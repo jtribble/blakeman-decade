@@ -88,6 +88,32 @@ let yearRenderer =
     <span style=(focusedRowIndex == rowIndex |> yearLabelStyle)>
       (ReasonReact.stringToElement(ImageMetadata.years[props##rowIndex]))
     </span>
+    <a
+      style=(
+        ReactDOMRe.Style.make(
+          ~left="0",
+          ~position="absolute",
+          ~color="red",
+          ~zIndex="1",
+          ~top="50%",
+          (),
+        )
+      )>
+      (ReasonReact.stringToElement("Scroll left"))
+    </a>
+    <a
+      style=(
+        ReactDOMRe.Style.make(
+          ~right="0",
+          ~position="absolute",
+          ~color="red",
+          ~zIndex="1",
+          ~top="50%",
+          (),
+        )
+      )>
+      (ReasonReact.stringToElement("Scroll right"))
+    </a>
     <ReactVirtualized.Grid
       cellRenderer=(
         photoRenderer(~rowIndex, ~focusedRowIndex, ~onHover=(_) =>
