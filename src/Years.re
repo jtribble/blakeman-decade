@@ -7,15 +7,20 @@ module Constants = {
   let imageHeight = photoHeight -. 2.0 *. imagePadding;
 };
 
-let getImageWidth = (rowIndex, columnIndex) => ImageMetadata.getImageDimensions(
-  ImageMetadata.years[rowIndex],
-  columnIndex + 1 |> string_of_int,
-)
-|> (dimens => (dimens##height |> float_of_int, dimens##width|> float_of_int))
-|> (((h, w)) => w *. Constants.imageHeight /. h);
+let getImageWidth = (rowIndex, columnIndex) =>
+  ImageMetadata.getImageDimensions(
+    ImageMetadata.years[rowIndex],
+    columnIndex + 1 |> string_of_int,
+  )
+  |> (
+    dimens => (dimens##height |> float_of_int, dimens##width |> float_of_int)
+  )
+  |> (((h, w)) => w *. Constants.imageHeight /. h);
 
 let getColumnWidth = (rowIndex, columnInfo) =>
-   getImageWidth(rowIndex, columnInfo##index) +. 2.0 *. (Constants.photoPadding +. Constants.imagePadding);
+  getImageWidth(rowIndex, columnInfo##index)
+  +. 2.0
+  *. (Constants.photoPadding +. Constants.imagePadding);
 
 let photoContainerStyle =
   ReactDOMRe.Style.make(
@@ -46,11 +51,11 @@ let imageStyle = width =>
     (),
   );
 
-let photoRenderer = (rowIndex, onHover, props) => {
-  let imageWidth =getImageWidth(rowIndex, props##columnIndex);
+let photoRenderer = (~rowIndex, ~onHover, props) => {
+  let imageWidth = getImageWidth(rowIndex, props##columnIndex);
   <div key=props##key style=props##style>
     <div onMouseOver=onHover style=photoContainerStyle>
-      <div style=photoStyle(imageWidth +. 2.0 *. Constants.imagePadding)>
+      <div style=(photoStyle(imageWidth +. 2.0 *. Constants.imagePadding))>
         <img
           src=(
             ImageMetadata.years[rowIndex]
@@ -61,16 +66,18 @@ let photoRenderer = (rowIndex, onHover, props) => {
         />
       </div>
     </div>
-  </div>
+  </div>;
 };
 
 let yearRenderer =
-    (windowWidth, scrollLeftByYear, onHover, onScrollLeft, props) => {
+    (~width, ~scrollLeftByYear, ~onHoverRow, ~onScrollLeft, ~setRef, props) => {
   let year = ImageMetadata.years[props##rowIndex];
   <div key=props##key style=props##style>
     <ReactVirtualized.Grid
       cellRenderer=(
-        photoRenderer(props##rowIndex, (_) => onHover(props##rowIndex))
+        photoRenderer(~rowIndex=props##rowIndex, ~onHover=(_) =>
+          onHoverRow(props##rowIndex)
+        )
       )
       className=("year-" ++ props##key)
       columnCount=(
@@ -78,23 +85,37 @@ let yearRenderer =
         |> Belt.Map.String.getWithDefault(_, year, 0)
       )
       columnWidth=(getColumnWidth(props##rowIndex))
-      height=(Constants.rowHeight)
+      height=Constants.rowHeight
       onScroll=(scrollEvent => onScrollLeft(year, scrollEvent##scrollLeft))
+      ref=(setRef(year))
       rowHeight=Constants.rowHeight
       rowCount=1
       scrollLeft=(Belt.Map.String.getWithDefault(scrollLeftByYear, year, 0.0))
-      width=windowWidth
+      width
     />
   </div>;
 };
 
 type state = {
   focusedRowIndex: int,
+  refByYears: Belt.Map.String.t(ref(option(ReasonReact.reactRef))),
+  yearsRef: ref(option(ReasonReact.reactRef)),
   scrollLeftByYear: Belt.Map.String.t(float),
   scrollY: float,
   windowHeight: float,
   windowWidth: float,
 };
+
+let setYearsRef = (theRef, {ReasonReact.state}) =>
+  state.yearsRef := Js.Nullable.toOption(theRef);
+
+let setYearRef = (year, theRef, {ReasonReact.state}) =>
+  Belt.Map.String.set(
+    state.refByYears,
+    year,
+    ref(Js.Nullable.toOption(theRef)),
+  )
+  |> ignore;
 
 type action =
   | FocusRow(int)
@@ -107,6 +128,10 @@ let make = _children => {
   ...component,
   initialState: () => {
     focusedRowIndex: 0,
+    refByYears:
+      ImageMetadata.years
+      |> Array.map(year => (year, ref(None)))
+      |> Belt.Map.String.fromArray,
     scrollLeftByYear:
       ImageMetadata.years
       |> Array.map(year => (year, 0.0))
@@ -114,6 +139,7 @@ let make = _children => {
     scrollY: Window.pageYOffset,
     windowHeight: Window.innerHeight,
     windowWidth: Window.innerWidth,
+    yearsRef: ref(None),
   },
   reducer: (action, state) =>
     switch (action) {
@@ -152,18 +178,22 @@ let make = _children => {
     <ReactVirtualized.Grid
       cellRenderer=(
         yearRenderer(
-          self.state.windowWidth,
-          self.state.scrollLeftByYear,
-          index => self.send(FocusRow(index)),
-          (year, scroll) => self.send(SetScrollLeft(year, scroll)),
+          ~width=self.state.windowWidth,
+          ~scrollLeftByYear=self.state.scrollLeftByYear,
+          ~onHoverRow=index => self.send(FocusRow(index)),
+          ~onScrollLeft=
+            (year, scroll) => self.send(SetScrollLeft(year, scroll)),
+          ~setRef=year => self.handle(setYearRef(year)),
         )
       )
       className="years"
       columnCount=1
       columnWidth=self.state.windowWidth
       height=self.state.windowHeight
+      ref=(self.handle(setYearsRef))
       rowCount=(ImageMetadata.years |> Array.length)
       rowHeight=Constants.rowHeight
+      scrollToAlignment="center"
       width=self.state.windowWidth
     />,
 };

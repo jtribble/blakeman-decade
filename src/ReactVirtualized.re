@@ -22,6 +22,7 @@ module Grid = {
         ~rowCount: int,
         ~onScroll: option(scrollPayload => unit)=?,
         ~scrollLeft: option(float)=?,
+        ~scrollToAlignment: option(string)=?,
         ~width,
         children,
       ) =>
@@ -38,6 +39,7 @@ module Grid = {
         "rowCount": rowCount,
         "onScroll": onScroll |> Js.Nullable.fromOption,
         "scrollLeft": scrollLeft |> Js.Nullable.fromOption,
+        "scrollToAlignment": scrollToAlignment |> Js.Nullable.fromOption,
         "width": width,
       },
       children,
