@@ -44,4 +44,16 @@ module Grid = {
       },
       children,
     );
+  [@bs.send]
+  external scrollToPosition :
+    (
+      ReasonReact.reactRef,
+      {
+        .
+        "scrollLeft": float,
+        "scrollTop": float,
+      }
+    ) =>
+    unit =
+    "";
 };
