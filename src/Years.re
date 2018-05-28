@@ -139,7 +139,7 @@ let yearRenderer =
 
 type state = {
   focusedRowIndex: int,
-  refByYears: Belt.Map.String.t(ref(option(ReasonReact.reactRef))),
+  refByYears: ref(Belt.Map.String.t(option(ReasonReact.reactRef))),
   yearsRef: ref(option(ReasonReact.reactRef)),
   scrollLeftByYear: Belt.Map.String.t(float),
   scrollY: float,
@@ -151,12 +151,9 @@ let setYearsRef = (theRef, {ReasonReact.state}) =>
   state.yearsRef := Js.Nullable.toOption(theRef);
 
 let setYearRef = (year, theRef, {ReasonReact.state}) =>
-  Belt.Map.String.set(
-    state.refByYears,
-    year,
-    ref(Js.Nullable.toOption(theRef)),
-  )
-  |> ignore;
+  state.refByYears :=
+    state.refByYears^
+    |. Belt.Map.String.set(year, theRef |> Js.Nullable.toOption);
 
 type action =
   | FocusRow(int)
@@ -171,8 +168,9 @@ let make = _children => {
     focusedRowIndex: 0,
     refByYears:
       ImageMetadata.years
-      |> Array.map(year => (year, ref(None)))
-      |> Belt.Map.String.fromArray,
+      |> Array.map(year => (year, None))
+      |> Belt.Map.String.fromArray
+      |> ref,
     scrollLeftByYear:
       ImageMetadata.years
       |> Array.map(year => (year, 0.0))
