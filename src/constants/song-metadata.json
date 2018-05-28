@@ -1,0 +1,70 @@
+{
+  "2008": [
+    { "artist": "Fleet Foxes", "duration": 309.26, "song": "Ragged Wood" },
+    {
+      "artist": "Deptartment of Eagles",
+      "duration": 265.53,
+      "song": "Waves Of Rye"
+    }
+  ],
+  "2009": [
+    { "artist": "Grizzly Bear", "duration": 294.53, "song": "Cheerleader" },
+    { "artist": "Animal Collective", "duration": 233.482, "song": "Taste" }
+  ],
+  "2010": [
+    {
+      "artist": "Broken Social Scene",
+      "duration": 309.34,
+      "song": "Sweetest Kill"
+    },
+    { "artist": "MGMT", "duration": 235.44, "song": "Congratulations" }
+  ],
+  "2011": [
+    { "artist": "St. Vincent", "duration": 268.53, "song": "Strange Mercy" },
+    { "artist": "Ryan Adams", "duration": 233.35, "song": "Do I Wait" }
+  ],
+  "2012": [
+    {
+      "artist": "Father John Misty",
+      "duration": 234.18,
+      "song": "Nancy From Now On"
+    },
+    {
+      "artist": "Damien Jurado",
+      "duration": 170.94,
+      "song": "Museum Of Flight"
+    }
+  ],
+  "2013": [
+    {
+      "artist": "The Shouting Matches",
+      "duration": 160.47,
+      "song": "Seven Sisters"
+    },
+    { "artist": "Volcano Choir", "duration": 295.6, "song": "Alaskans" }
+  ],
+  "2014": [
+    { "artist": "Ryan Adams", "duration": 265.43, "song": "Feels Like Fire" },
+    { "artist": "Mac Demarco", "duration": 145.92, "song": "Salad Days" }
+  ],
+  "2015": [
+    { "artist": "Kendrick Lamar", "duration": 336.065, "song": "i" },
+    {
+      "artist": "Hiss Golden Messenger",
+      "duration": 330.44,
+      "song": "Day O Day (A Love So Free)"
+    }
+  ],
+  "2016": [
+    { "artist": "Bon Iver", "duration": 234.03, "song": "00000 Million" },
+    { "artist": "Twin Peaks", "duration": 202.76, "song": "Wanted You" }
+  ],
+  "2017": [
+    {
+      "artist": "The War on Drugs",
+      "duration": 670.69,
+      "song": "Thinking Of A Place"
+    },
+    { "artist": "Twin Peaks", "duration": 250.618, "song": "Tossing Tears" }
+  ]
+}
