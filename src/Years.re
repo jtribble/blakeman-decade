@@ -148,7 +148,9 @@ let ensureFocusedRowIsScrolled =
   );
 
 type state = {
+  durationByYear: Belt.Map.String.t(float),
   focusedRowIndex: int,
+  lastFocusChangeTime: float,
   refByYears: ref(Belt.Map.String.t(option(ReasonReact.reactRef))),
   yearsRef: ref(option(ReasonReact.reactRef)),
   scrollLeftByYear: Belt.Map.String.t(float),
@@ -176,7 +178,12 @@ let component = ReasonReact.reducerComponent("Years");
 let make = _children => {
   ...component,
   initialState: () => {
+    durationByYear:
+      ImageMetadata.years
+      |> Array.map(year => (year, 0.0))
+      |> Belt.Map.String.fromArray,
     focusedRowIndex: 0,
+    lastFocusChangeTime: Js.Date.now(),
     refByYears:
       ImageMetadata.years
       |> Array.map(year => (year, None))
@@ -193,8 +200,23 @@ let make = _children => {
   },
   reducer: (action, state) =>
     switch (action) {
-    | FocusRow(index) =>
-      ReasonReact.Update({...state, focusedRowIndex: index})
+    | FocusRow(index) => 
+      ReasonReact.Update({
+        ...state,
+        focusedRowIndex: index,
+        durationByYear:
+          index != state.focusedRowIndex ?
+            state.durationByYear
+            |. Belt.Map.String.update(
+                 ImageMetadata.years[state.focusedRowIndex], y =>
+                 Belt.Option.map(y, duration =>
+                   duration +. (Js.Date.now() -. state.lastFocusChangeTime)
+                 )
+               ) :
+            state.durationByYear,
+        lastFocusChangeTime:
+          state.focusedRowIndex != index ? Js.Date.now() : state.lastFocusChangeTime,
+      })
     | SetWindowSize =>
       ReasonReact.Update({
         ...state,
