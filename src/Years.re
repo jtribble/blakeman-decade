@@ -148,6 +148,7 @@ let ensureFocusedRowIsScrolled =
   );
 
 type state = {
+  audio: Audio.t,
   durationByYear: Belt.Map.String.t(float),
   focusedRowIndex: int,
   lastFocusChangeTime: float,
@@ -170,6 +171,7 @@ let setYearRef = (year, theRef, {ReasonReact.state}) =>
 type action =
   | FocusRow(int)
   | KeyDown(int)
+  | SetAudio(Audio.t)
   | SetWindowSize
   | SetScrollLeft(string, float);
 
@@ -178,6 +180,7 @@ let component = ReasonReact.reducerComponent("Years");
 let make = _children => {
   ...component,
   initialState: () => {
+    audio: Audio.init(""),
     durationByYear:
       ImageMetadata.years
       |> Array.map(year => (year, 0.0))
@@ -200,23 +203,43 @@ let make = _children => {
   },
   reducer: (action, state) =>
     switch (action) {
-    | FocusRow(index) => 
-      ReasonReact.Update({
-        ...state,
-        focusedRowIndex: index,
-        durationByYear:
-          index != state.focusedRowIndex ?
+    | FocusRow(index) =>
+      ReasonReact.UpdateWithSideEffects(
+        {
+          ...state,
+          focusedRowIndex: index,
+          durationByYear:
             state.durationByYear
             |. Belt.Map.String.update(
                  ImageMetadata.years[state.focusedRowIndex], y =>
                  Belt.Option.map(y, duration =>
                    duration +. (Js.Date.now() -. state.lastFocusChangeTime)
                  )
-               ) :
-            state.durationByYear,
-        lastFocusChangeTime:
-          state.focusedRowIndex != index ? Js.Date.now() : state.lastFocusChangeTime,
-      })
+               ),
+          lastFocusChangeTime:
+            state.focusedRowIndex != index ?
+              Js.Date.now() : state.lastFocusChangeTime,
+        },
+        (
+          self => {
+            let year = ImageMetadata.years[self.state.focusedRowIndex];
+            let (path, time) =
+              SongMetadata.getSong(
+                ~year,
+                ~duration=
+                  self.state.durationByYear
+                  |. Belt.Map.String.getExn(year)
+                  |> (mills => mills /. 1000.0),
+              );
+            self.state.audio |> Audio.pause;
+            let audio = Audio.init(path);
+            Audio.setCurrentTime(audio, time);
+            Audio.play(audio);
+            self.send(SetAudio(audio));
+          }
+        ),
+      )
+    | SetAudio(audio) => ReasonReact.Update({...state, audio})
     | SetWindowSize =>
       ReasonReact.Update({
         ...state,
@@ -243,12 +266,14 @@ let make = _children => {
               ),
           },
           (
-            self =>
+            self => {
               ensureFocusedRowIsScrolled(
                 ~yearsRef=self.state.yearsRef,
                 ~scrollLeftByYear=self.state.scrollLeftByYear,
                 ~focusedRowIndex=self.state.focusedRowIndex,
-              )
+              );
+              self.send(FocusRow(self.state.focusedRowIndex));
+            }
           ),
         )
       | 38 =>
@@ -259,12 +284,14 @@ let make = _children => {
             focusedRowIndex: Js.Math.max_int(0, state.focusedRowIndex - 1),
           },
           (
-            self =>
+            self => {
               ensureFocusedRowIsScrolled(
                 ~yearsRef=self.state.yearsRef,
                 ~scrollLeftByYear=self.state.scrollLeftByYear,
                 ~focusedRowIndex=self.state.focusedRowIndex,
-              )
+              );
+              self.send(FocusRow(self.state.focusedRowIndex));
+            }
           ),
         )
       | 37 =>
@@ -328,7 +355,10 @@ let make = _children => {
         yearRenderer(
           ~width=self.state.windowWidth,
           ~scrollLeftByYear=self.state.scrollLeftByYear,
-          ~onHoverPhoto=index => self.send(FocusRow(index)),
+          ~onHoverPhoto=
+            index =>
+              index != self.state.focusedRowIndex ?
+                self.send(FocusRow(index)) : (),
           ~onScrollLeft=
             (year, scroll) => self.send(SetScrollLeft(year, scroll)),
           ~setRef=year => self.handle(setYearRef(year)),
