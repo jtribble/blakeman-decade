@@ -1,15 +1,12 @@
+type song = {
+  .
+  "artist": string,
+  "duration": float,
+  "song": string,
+};
+
 [@bs.val] [@bs.module]
-external songMetadata :
-  Js.Dict.t(
-    Js.Array.t(
-      {
-        .
-        "artist": string,
-        "duration": float,
-        "song": string,
-      },
-    ),
-  ) =
+external songMetadata : Js.Dict.t(Js.Array.t(song)) =
   "../constants/song-metadata.json";
 
 let getSongPath = song => "/assets/songs/" ++ song##song ++ ".mp3";
@@ -27,6 +24,6 @@ let getSong = (~year, ~duration) =>
        )
      )
   |. Belt.Option.map(((song, moddedDuration)) =>
-       (getSongPath(song), moddedDuration)
+       (song, getSongPath(song), moddedDuration)
      )
   |> Belt.Option.getExn;

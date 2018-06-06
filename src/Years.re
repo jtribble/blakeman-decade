@@ -149,6 +149,7 @@ let ensureFocusedRowIsScrolled =
 
 type state = {
   audio: Audio.t,
+  currentSong: SongMetadata.song,
   durationByYear: Belt.Map.String.t(float),
   focusedRowIndex: int,
   lastFocusChangeTime: float,
@@ -172,6 +173,7 @@ type action =
   | FocusRow(int)
   | KeyDown(int)
   | SetAudio(Audio.t)
+  | SetSong(SongMetadata.song)
   | SetWindowSize
   | SetScrollLeft(string, float);
 
@@ -181,6 +183,9 @@ let make = _children => {
   ...component,
   initialState: () => {
     audio: Audio.init(""),
+    currentSong:
+      SongMetadata.getSong(~year=ImageMetadata.years[0], ~duration=0.0)
+      |> (((song, _, _)) => song),
     durationByYear:
       ImageMetadata.years
       |> Array.map(year => (year, 0.0))
@@ -223,7 +228,7 @@ let make = _children => {
         (
           self => {
             let year = ImageMetadata.years[self.state.focusedRowIndex];
-            let (path, time) =
+            let (song, path, time) =
               SongMetadata.getSong(
                 ~year,
                 ~duration=
@@ -235,11 +240,13 @@ let make = _children => {
             let audio = Audio.init(path);
             Audio.setCurrentTime(audio, time);
             Audio.play(audio);
+            self.send(SetSong(song));
             self.send(SetAudio(audio));
           }
         ),
       )
     | SetAudio(audio) => ReasonReact.Update({...state, audio})
+    | SetSong(song) => ReasonReact.Update({...state, currentSong: song})
     | SetWindowSize =>
       ReasonReact.Update({
         ...state,
@@ -350,30 +357,36 @@ let make = _children => {
     ),
   ],
   render: self =>
-    <ReactVirtualized.Grid
-      cellRenderer=(
-        yearRenderer(
-          ~width=self.state.windowWidth,
-          ~scrollLeftByYear=self.state.scrollLeftByYear,
-          ~onHoverPhoto=
-            index =>
-              index != self.state.focusedRowIndex ?
-                self.send(FocusRow(index)) : (),
-          ~onScrollLeft=
-            (year, scroll) => self.send(SetScrollLeft(year, scroll)),
-          ~setRef=year => self.handle(setYearRef(year)),
-          ~focusedRowIndex=self.state.focusedRowIndex,
-          ~refByYears=self.state.refByYears,
+    <div>
+      <ReactVirtualized.Grid
+        cellRenderer=(
+          yearRenderer(
+            ~width=self.state.windowWidth,
+            ~scrollLeftByYear=self.state.scrollLeftByYear,
+            ~onHoverPhoto=
+              index =>
+                index != self.state.focusedRowIndex ?
+                  self.send(FocusRow(index)) : (),
+            ~onScrollLeft=
+              (year, scroll) => self.send(SetScrollLeft(year, scroll)),
+            ~setRef=year => self.handle(setYearRef(year)),
+            ~focusedRowIndex=self.state.focusedRowIndex,
+            ~refByYears=self.state.refByYears,
+          )
         )
-      )
-      className="years"
-      columnCount=1
-      columnWidth=self.state.windowWidth
-      height=self.state.windowHeight
-      ref=(self.handle(setYearsRef))
-      rowCount=(ImageMetadata.years |> Array.length)
-      rowHeight=Constants.rowHeight
-      scrollToAlignment="center"
-      width=self.state.windowWidth
-    />,
+        className="years"
+        columnCount=1
+        columnWidth=self.state.windowWidth
+        height=self.state.windowHeight
+        ref=(self.handle(setYearsRef))
+        rowCount=(ImageMetadata.years |> Array.length)
+        rowHeight=Constants.rowHeight
+        scrollToAlignment="center"
+        width=self.state.windowWidth
+      />
+      <SongLabel
+        artist=self.state.currentSong##artist
+        song=self.state.currentSong##song
+      />
+    </div>,
 };
