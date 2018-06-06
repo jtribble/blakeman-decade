@@ -152,6 +152,8 @@ type state = {
   currentSong: SongMetadata.song,
   durationByYear: Belt.Map.String.t(float),
   focusedRowIndex: int,
+  intervalId: int,
+  isMuted: bool,
   lastFocusChangeTime: float,
   refByYears: ref(Belt.Map.String.t(option(ReasonReact.reactRef))),
   yearsRef: ref(option(ReasonReact.reactRef)),
@@ -172,17 +174,24 @@ let setYearRef = (year, theRef, {ReasonReact.state}) =>
 type action =
   | FocusRow(int)
   | KeyDown(int)
+  | Mute
   | SetAudio(Audio.t)
+  | SetIntervalId(int)
   | SetSong(SongMetadata.song)
   | SetWindowSize
-  | SetScrollLeft(string, float);
+  | SetScrollLeft(string, float)
+  | UnMute
+  | UpdateSongMaybe;
 
 let component = ReasonReact.reducerComponent("Years");
 
 let make = _children => {
   ...component,
   initialState: () => {
-    audio: Audio.init(""),
+    audio:
+      SongMetadata.getSong(~year=ImageMetadata.years[0], ~duration=0.0)
+      |> (((_, path, _)) => path)
+      |> Audio.init,
     currentSong:
       SongMetadata.getSong(~year=ImageMetadata.years[0], ~duration=0.0)
       |> (((song, _, _)) => song),
@@ -191,6 +200,8 @@ let make = _children => {
       |> Array.map(year => (year, 0.0))
       |> Belt.Map.String.fromArray,
     focusedRowIndex: 0,
+    intervalId: 0,
+    isMuted: true,
     lastFocusChangeTime: Js.Date.now(),
     refByYears:
       ImageMetadata.years
@@ -238,6 +249,9 @@ let make = _children => {
               );
             self.state.audio |> Audio.pause;
             let audio = Audio.init(path);
+            if (self.state.isMuted) {
+              audio |> Audio.mute;
+            };
             Audio.setCurrentTime(audio, time);
             Audio.play(audio);
             self.send(SetSong(song));
@@ -245,7 +259,13 @@ let make = _children => {
           }
         ),
       )
+    | Mute =>
+      ReasonReact.UpdateWithSideEffects(
+        {...state, isMuted: true},
+        (self => self.state.audio |> Audio.mute),
+      )
     | SetAudio(audio) => ReasonReact.Update({...state, audio})
+    | SetIntervalId(id) => ReasonReact.Update({...state, intervalId: id})
     | SetSong(song) => ReasonReact.Update({...state, currentSong: song})
     | SetWindowSize =>
       ReasonReact.Update({
@@ -329,6 +349,13 @@ let make = _children => {
         )
       | _ => ReasonReact.NoUpdate
       }
+    | UnMute =>
+      ReasonReact.UpdateWithSideEffects(
+        {...state, isMuted: false},
+        (self => self.state.audio |> Audio.unMute),
+      )
+    | UpdateSongMaybe =>
+      ReasonReact.SideEffects(((_) => Js.log("Update song?")))
     },
   subscriptions: self => [
     Sub(
@@ -354,6 +381,15 @@ let make = _children => {
         Body.removeEventListener("keydown", event =>
           self.send(KeyDown(event##keyCode))
         ),
+    ),
+    Sub(
+      () =>
+        self.send(
+          SetIntervalId(
+            Window.setInterval(() => self.send(UpdateSongMaybe), 1000.0),
+          ),
+        ),
+      () => Window.clearInterval(self.state.intervalId) |> ignore,
     ),
   ],
   render: self =>
@@ -384,9 +420,41 @@ let make = _children => {
         scrollToAlignment="center"
         width=self.state.windowWidth
       />
-      <SongLabel
-        artist=self.state.currentSong##artist
-        song=self.state.currentSong##song
-      />
+      <div
+        style=(
+          ReactDOMRe.Style.make(
+            ~fontSize="16px",
+            ~position="absolute",
+            ~padding="20px",
+            ~bottom="20px",
+            ~right="20px",
+            ~backgroundColor="#fff",
+            ~color="#333",
+            ~display="flex",
+            ~alignItems="center",
+            ~zIndex="1",
+            (),
+          )
+        )>
+        <SongLabel
+          artist=self.state.currentSong##artist
+          song=self.state.currentSong##song
+        />
+        (
+          self.state.isMuted ?
+            <a
+              href="#"
+              onClick=((_) => self.send(UnMute))
+              style=(ReactDOMRe.Style.make(~color="palevioletred", ()))>
+              (ReasonReact.stringToElement("Unmute"))
+            </a> :
+            <a
+              href="#"
+              onClick=((_) => self.send(Mute))
+              style=(ReactDOMRe.Style.make(~color="palevioletred", ()))>
+              (ReasonReact.stringToElement("Mute"))
+            </a>
+        )
+      </div>
     </div>,
 };
