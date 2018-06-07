@@ -247,9 +247,7 @@ let make = _children => {
           ...state,
           focusedRowIndex: index,
           durationByYear: updateDurationByYear(state),
-          lastFocusChangeTime:
-            state.focusedRowIndex != index ?
-              Js.Date.now() : state.lastFocusChangeTime,
+          lastFocusChangeTime: Js.Date.now(),
         },
         (
           self => {
@@ -379,7 +377,25 @@ let make = _children => {
         ),
       )
     | UpdateSongMaybe =>
-      ReasonReact.SideEffects(((_) => Js.log("Update song?")))
+      ReasonReact.SideEffects(
+        (
+          self => {
+            let (_, newSongPath, _) =
+              updateDurationByYear(self.state)
+              |> (
+                newDurationByYear =>
+                  getCurrentSong({
+                    ...self.state,
+                    durationByYear: newDurationByYear,
+                  })
+              );
+            let (_, oldSongPath, _) = getCurrentSong(self.state);
+            if (newSongPath != oldSongPath) {
+              self.send(FocusRow(self.state.focusedRowIndex));
+            };
+          }
+        ),
+      )
     },
   subscriptions: self => [
     Sub(

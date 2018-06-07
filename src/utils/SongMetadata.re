@@ -19,8 +19,9 @@ let getSong = (~year, ~duration) =>
      )
   |. Belt.Option.map(((moddedDuration, songs)) =>
        (
-         moddedDuration > songs[0]##duration ? songs[0] : songs[1],
-         moddedDuration,
+         moddedDuration > songs[0]##duration ? songs[1] : songs[0],
+         moddedDuration
+         -. (moddedDuration > songs[0]##duration ? songs[0]##duration : 0.0),
        )
      )
   |. Belt.Option.map(((song, moddedDuration)) =>
