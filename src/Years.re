@@ -171,6 +171,28 @@ let setYearRef = (year, theRef, {ReasonReact.state}) =>
     state.refByYears^
     |. Belt.Map.String.set(year, theRef |> Js.Nullable.toOption);
 
+let getCurrentSong = ({durationByYear, focusedRowIndex}) =>
+  ImageMetadata.years[focusedRowIndex]
+  |> (
+    year =>
+      SongMetadata.getSong(
+        ~year,
+        ~duration=
+          durationByYear
+          |. Belt.Map.String.getExn(year)
+          |> (mills => mills /. 1000.0),
+      )
+  );
+
+let updateDurationByYear =
+    ({durationByYear, focusedRowIndex, lastFocusChangeTime}) =>
+  durationByYear
+  |. Belt.Map.String.update(ImageMetadata.years[focusedRowIndex], y =>
+       Belt.Option.map(y, duration =>
+         duration +. (Js.Date.now() -. lastFocusChangeTime)
+       )
+     );
+
 type action =
   | FocusRow(int)
   | KeyDown(int)
@@ -224,29 +246,14 @@ let make = _children => {
         {
           ...state,
           focusedRowIndex: index,
-          durationByYear:
-            state.durationByYear
-            |. Belt.Map.String.update(
-                 ImageMetadata.years[state.focusedRowIndex], y =>
-                 Belt.Option.map(y, duration =>
-                   duration +. (Js.Date.now() -. state.lastFocusChangeTime)
-                 )
-               ),
+          durationByYear: updateDurationByYear(state),
           lastFocusChangeTime:
             state.focusedRowIndex != index ?
               Js.Date.now() : state.lastFocusChangeTime,
         },
         (
           self => {
-            let year = ImageMetadata.years[self.state.focusedRowIndex];
-            let (song, path, time) =
-              SongMetadata.getSong(
-                ~year,
-                ~duration=
-                  self.state.durationByYear
-                  |. Belt.Map.String.getExn(year)
-                  |> (mills => mills /. 1000.0),
-              );
+            let (song, path, time) = getCurrentSong(self.state);
             self.state.audio |> Audio.pause;
             let audio = Audio.init(path);
             if (self.state.isMuted) {
@@ -261,7 +268,12 @@ let make = _children => {
       )
     | Mute =>
       ReasonReact.UpdateWithSideEffects(
-        {...state, isMuted: true},
+        {
+          ...state,
+          durationByYear: updateDurationByYear(state),
+          lastFocusChangeTime: Js.Date.now(),
+          isMuted: true,
+        },
         (self => self.state.audio |> Audio.mute),
       )
     | SetAudio(audio) => ReasonReact.Update({...state, audio})
@@ -351,8 +363,20 @@ let make = _children => {
       }
     | UnMute =>
       ReasonReact.UpdateWithSideEffects(
-        {...state, isMuted: false},
-        (self => self.state.audio |> Audio.unMute),
+        {
+          ...state,
+          durationByYear: updateDurationByYear(state),
+          lastFocusChangeTime: Js.Date.now(),
+          isMuted: false,
+        },
+        (
+          self => {
+            let (_, _, time) = getCurrentSong(self.state);
+            self.state.audio |> Audio.unMute;
+            Audio.setCurrentTime(self.state.audio, time);
+            Audio.play(self.state.audio);
+          }
+        ),
       )
     | UpdateSongMaybe =>
       ReasonReact.SideEffects(((_) => Js.log("Update song?")))
