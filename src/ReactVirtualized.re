@@ -12,7 +12,14 @@ module Grid = {
   external grid : ReasonReact.reactClass = "Grid";
   let make =
       (
-        ~cellRenderer,
+        ~cellRenderer:
+           {
+             ..
+             "columnIndex": int,
+             "key": string,
+             "style": ReactDOMRe.style,
+           } =>
+           ReasonReact.reactElement,
         ~className: string,
         ~columnCount: int,
         ~columnWidth,

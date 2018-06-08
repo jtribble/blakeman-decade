@@ -44,6 +44,8 @@ let getImagePaths = (size, year) =>
 
 let getSmallImagePaths = getImagePaths("sm");
 
+let getMediumImagePaths = getImagePaths("med");
+
 let fallbackDimens = {"height": 0, "width": 0};
 
 let getImageDimensions = (year, id) =>
