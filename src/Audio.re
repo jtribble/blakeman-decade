@@ -17,5 +17,3 @@ let mute = a => setVolume(a, 0.0);
 let unMute = a => setVolume(a, 1.0);
 
 let isMuted = a => a |> getVolume |> (v => v == 0.0);
-
-Js.log(init("") |> isMuted);
