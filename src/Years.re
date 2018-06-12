@@ -61,6 +61,17 @@ let updateDurationByYear =
        )
      );
 
+let leftToIndex = (left, rowIndex) =>
+  ImageMetadata.countByYear
+  |. Belt.Map.String.getExn(ImageMetadata.years[rowIndex])
+  |. Belt.Array.makeBy(columnIndex =>
+       Photo.getColumnWidth(rowIndex, columnIndex)
+     )
+  |. Belt.Array.reduce((0.0, 0), ((sum, i), width) =>
+       sum +. width > left ? (sum, i) : (sum +. width, i + 1)
+     )
+  |> (((_, i)) => i + 1);
+
 type action =
   | FocusRow(int)
   | KeyDown(int)
@@ -263,7 +274,25 @@ let make = _children => {
       | 27 =>
         /* Escape */
         ReasonReact.Update({...state, lightboxPhoto: None})
-      | _ => ReasonReact.NoUpdate
+      | 13
+      | 32 =>
+        /* Enter or Space */
+        let year = ImageMetadata.years[state.focusedRowIndex];
+        ReasonReact.Update({
+          ...state,
+          lightboxPhoto:
+            state.lightboxPhoto |> Belt.Option.isSome ?
+              None :
+              Some((
+                year,
+                state.scrollLeftByYear
+                |. Belt.Map.String.getExn(year)
+                |. leftToIndex(state.focusedRowIndex),
+              )),
+        });
+      | x =>
+        Js.log(x);
+        ReasonReact.NoUpdate;
       }
     | UnMute =>
       ReasonReact.UpdateWithSideEffects(

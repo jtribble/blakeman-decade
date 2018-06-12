@@ -61,7 +61,9 @@ let render =
         ImageMetadata.countByYear
         |> Belt.Map.String.getWithDefault(_, year, 0)
       )
-      columnWidth=(Photo.getColumnWidth(rowIndex))
+      columnWidth=(
+        columnInfo => Photo.getColumnWidth(rowIndex, columnInfo##index)
+      )
       height=Constants.rowHeight
       onScroll=(scrollEvent => onScrollLeft(year, scrollEvent##scrollLeft))
       ref=(setRef(year))

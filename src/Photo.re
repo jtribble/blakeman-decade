@@ -8,8 +8,8 @@ let getImageWidth = (rowIndex, columnIndex) =>
   )
   |> (((h, w)) => w *. Constants.imageHeight /. h);
 
-let getColumnWidth = (rowIndex, columnInfo) =>
-  getImageWidth(rowIndex, columnInfo##index)
+let getColumnWidth = (rowIndex, columnIndex) =>
+  getImageWidth(rowIndex, columnIndex)
   +. 2.0
   *. (Constants.photoPadding +. Constants.imagePadding);
 
