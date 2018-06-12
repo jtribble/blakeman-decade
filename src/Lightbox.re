@@ -50,7 +50,7 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
         onClick=prevPhoto
         style=(
           ReactDOMRe.Style.make(
-            ~color="white",
+            ~color="#F2F2F2",
             ~position="absolute",
             ~left="10px",
             ~zIndex="3",
@@ -65,7 +65,7 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
         onClick=nextPhoto
         style=(
           ReactDOMRe.Style.make(
-            ~color="white",
+            ~color="#F2F2F2",
             ~cursor="pointer",
             ~fontSize="50px",
             ~position="absolute",

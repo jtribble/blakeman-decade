@@ -195,23 +195,20 @@ let make = _children => {
         /* Down */
         state.lightboxPhoto |> Belt.Option.isSome ?
           ReasonReact.NoUpdate :
-          ReasonReact.UpdateWithSideEffects(
-            {
-              ...state,
-              focusedRowIndex:
-                Js.Math.min_int(
-                  ImageMetadata.years |> Array.length |> (x => x - 1),
-                  state.focusedRowIndex + 1,
-                ),
-            },
+          ReasonReact.SideEffects(
             (
               self => {
+                let rowToFocus =
+                  Js.Math.min_int(
+                    ImageMetadata.years |> Array.length |> (x => x - 1),
+                    self.state.focusedRowIndex + 1,
+                  );
                 ensureFocusedRowIsScrolled(
                   ~yearsRef=self.state.yearsRef,
                   ~scrollLeftByYear=self.state.scrollLeftByYear,
-                  ~focusedRowIndex=self.state.focusedRowIndex,
+                  ~focusedRowIndex=rowToFocus,
                 );
-                self.send(FocusRow(self.state.focusedRowIndex));
+                self.send(FocusRow(rowToFocus));
               }
             ),
           )
@@ -219,19 +216,17 @@ let make = _children => {
         /* Up */
         state.lightboxPhoto |> Belt.Option.isSome ?
           ReasonReact.NoUpdate :
-          ReasonReact.UpdateWithSideEffects(
-            {
-              ...state,
-              focusedRowIndex: Js.Math.max_int(0, state.focusedRowIndex - 1),
-            },
+          ReasonReact.SideEffects(
             (
               self => {
+                let rowToFocus =
+                  Js.Math.max_int(0, self.state.focusedRowIndex - 1);
                 ensureFocusedRowIsScrolled(
                   ~yearsRef=self.state.yearsRef,
                   ~scrollLeftByYear=self.state.scrollLeftByYear,
-                  ~focusedRowIndex=self.state.focusedRowIndex,
+                  ~focusedRowIndex=rowToFocus,
                 );
-                self.send(FocusRow(self.state.focusedRowIndex));
+                self.send(FocusRow(rowToFocus));
               }
             ),
           )

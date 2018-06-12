@@ -2,11 +2,14 @@ let component = ReasonReact.statelessComponent("Intro");
 
 let letterStyle =
   ReactDOMRe.Style.make(
-    ~left="50%",
+    ~flexDirection="column",
+    ~margin="35px auto",
     ~maxWidth="600",
-    ~position="absolute",
-    ~top="50%",
-    ~transform="translate(-50%, -50%)",
+    ~minWidth="300px",
+    ~display="flex",
+    ~justifyContent="center",
+    ~alignItems="center",
+    ~width="60%",
     (),
   );
 
@@ -15,6 +18,15 @@ let letterSignatureStyle =
     ~fontSize="1.25em",
     ~fontWeight="bold",
     ~textAlign="right",
+    (),
+  );
+
+let linkStyle =
+  ReactDOMRe.Style.make(
+    ~textAlign="center",
+    ~width="100%",
+    ~display="block",
+    ~color="palevioletred",
     (),
   );
 
@@ -52,5 +64,6 @@ let make = _children => {
         )
       </p>
       <p style=letterSignatureStyle> (str("Love, David")) </p>
+      <a href="/years" style=linkStyle> (ReasonReact.string("Begin")) </a>
     </div>,
 };
