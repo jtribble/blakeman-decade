@@ -5,10 +5,8 @@ type action =
 
 let component = ReasonReact.reducerComponent("Lightbox");
 
-let setLightboxRef = (r, {ReasonReact.state}) => {
-  Js.log("HI there");
+let setLightboxRef = (r, {ReasonReact.state}) =>
   state.lightboxRef := Js.Nullable.toOption(r);
-};
 
 let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) => {
   ...component,
@@ -16,22 +14,24 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
   reducer: action =>
     switch (action) {
     | Focus => (
-        state =>
-          switch (state.lightboxRef^) {
-          | Some(field) =>
-            Js.log("YEA");
-            let node = ReactDOMRe.domElementToObj(field);
-            ignore(node##focus());
-            ReasonReact.NoUpdate;
-          | _ => ReasonReact.NoUpdate
-          }
+        (_) =>
+          ReasonReact.SideEffects(
+            ({state}) =>
+              switch (state.lightboxRef^) {
+              | Some(field) =>
+                let node = ReactDOMRe.domElementToObj(field);
+                ignore(node##focus());
+              | _ => ()
+              },
+          )
       )
     },
-  didMount: self => self.send(Focus) |> ignore,
+  didMount: self => self.send(Focus),
   render: ({handle}) =>
     <div
       ref=(handle(setLightboxRef))
-      style=(ReactDOMRe.Style.make(~position="absolute", ~top="0", ()))>
+      style=(ReactDOMRe.Style.make(~position="absolute", ~top="0", ()))
+      tabIndex=(-1)>
       <div
         style=(
           ReactDOMRe.Style.make(
@@ -41,6 +41,37 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
             ~width=string_of_float(width) ++ "px",
             ~height=string_of_float(height) ++ "px",
             ~zIndex="1",
+            (),
+          )
+        )
+      />
+      <i
+        className="fa fa-chevron-left"
+        onClick=prevPhoto
+        style=(
+          ReactDOMRe.Style.make(
+            ~color="white",
+            ~position="absolute",
+            ~left="10px",
+            ~zIndex="3",
+            ~top="50%",
+            ~fontSize="50px",
+            (),
+          )
+        )
+      />
+      <i
+        className="fa fa-chevron-right"
+        onClick=nextPhoto
+        style=(
+          ReactDOMRe.Style.make(
+            ~color="white",
+            ~cursor="pointer",
+            ~fontSize="50px",
+            ~position="absolute",
+            ~right="50px",
+            ~zIndex="3",
+            ~top="50%",
             (),
           )
         )

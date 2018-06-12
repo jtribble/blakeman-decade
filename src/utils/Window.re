@@ -12,4 +12,6 @@ external removeEventListener : (string, unit => unit, bool) => unit = "";
 
 [@bs.val] external setInterval : (unit => unit, float) => int = "";
 
+[@bs.val] external setTimeout : ((. unit) => unit, float) => int = "";
+
 [@bs.val] external clearInterval : int => float = "";

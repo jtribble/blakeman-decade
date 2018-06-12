@@ -27,6 +27,7 @@ let photoStyle = width =>
     ~alignItems="center",
     ~backgroundColor="white",
     ~boxShadow="0px 3px 15px rgba(0,0,0,0.2)",
+    ~cursor="pointer",
     ~display="flex",
     ~justifyContent="center",
     ~height=(Constants.photoHeight |> string_of_float) ++ "px",
@@ -47,9 +48,10 @@ let renderer = (~rowIndex, ~focusedRowIndex, ~onClick, ~onHover, props) => {
   let imageWidth = getImageWidth(rowIndex, props##columnIndex);
   <div key=props##key style=props##style>
     <div onMouseOver=onHover style=photoContainerStyle>
-      <div style=(photoStyle(imageWidth +. 2.0 *. Constants.imagePadding))>
+      <div
+        onClick=((_) => onClick(props##columnIndex))
+        style=(photoStyle(imageWidth +. 2.0 *. Constants.imagePadding))>
         <img
-          onClick=((_) => onClick(props##columnIndex))
           src=(
             ImageMetadata.years[rowIndex]
             |> ImageMetadata.getSmallImagePaths

@@ -348,6 +348,7 @@ let make = _children => {
       <ReactVirtualized.Grid
         cellRenderer=(
           Year.render(
+            ~isLightboxOpen=self.state.lightboxPhoto |> Belt.Option.isSome,
             ~width=self.state.windowWidth,
             ~scrollLeftByYear=self.state.scrollLeftByYear,
             ~onClickPhoto=

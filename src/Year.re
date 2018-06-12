@@ -11,6 +11,7 @@ let yearLabelStyle = isFocused =>
 
 let render =
     (
+      ~isLightboxOpen,
       ~width,
       ~scrollLeftByYear,
       ~onClickPhoto,
@@ -30,7 +31,7 @@ let render =
     </span>
     <ScrollButton
       className="fa fa-chevron-left"
-      isFocused
+      isFocused=(isFocused && ! isLightboxOpen)
       year
       refByYears
       scrollLeftByYear
@@ -39,7 +40,7 @@ let render =
     />
     <ScrollButton
       className="fa fa-chevron-right"
-      isFocused
+      isFocused=(isFocused && ! isLightboxOpen)
       year
       refByYears
       scrollLeftByYear
