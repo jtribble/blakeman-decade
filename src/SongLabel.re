@@ -4,6 +4,6 @@ let make = (~artist, ~song, _children) => {
   ...component,
   render: (_) =>
     <div style=(ReactDOMRe.Style.make(~marginRight="10px", ()))>
-      (ReasonReact.stringToElement("\"" ++ song ++ "\"" ++ " by " ++ artist))
+      (ReasonReact.string("\"" ++ song ++ "\"" ++ " by " ++ artist))
     </div>,
 };

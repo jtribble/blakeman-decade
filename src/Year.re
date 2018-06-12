@@ -26,7 +26,7 @@ let render =
   let isFocused = focusedRowIndex == rowIndex;
   <div key=props##key style=props##style>
     <span style=(isFocused |> yearLabelStyle)>
-      (ReasonReact.stringToElement(ImageMetadata.years[props##rowIndex]))
+      (ReasonReact.string(ImageMetadata.years[props##rowIndex]))
     </span>
     <ScrollButton
       className="fa fa-chevron-left"
@@ -51,7 +51,7 @@ let render =
         Photo.renderer(
           ~rowIndex,
           ~focusedRowIndex,
-          ~onClick=(_) => onClickPhoto((year, rowIndex)),
+          ~onClick=columnIndex => onClickPhoto((year, columnIndex)),
           ~onHover=(_) => onHoverPhoto(rowIndex),
         )
       )

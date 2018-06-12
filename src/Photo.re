@@ -49,7 +49,7 @@ let renderer = (~rowIndex, ~focusedRowIndex, ~onClick, ~onHover, props) => {
     <div onMouseOver=onHover style=photoContainerStyle>
       <div style=(photoStyle(imageWidth +. 2.0 *. Constants.imagePadding))>
         <img
-          onClick
+          onClick=((_) => onClick(props##columnIndex))
           src=(
             ImageMetadata.years[rowIndex]
             |> ImageMetadata.getSmallImagePaths

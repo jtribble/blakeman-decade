@@ -65,6 +65,8 @@ type action =
   | FocusRow(int)
   | KeyDown(int)
   | Mute
+  | SelectNextLightboxPhoto
+  | SelectPrevLightboxPhoto
   | SetAudio(Audio.t)
   | SetIntervalId(int)
   | SetLightboxPhoto(option((string, int)))
@@ -146,6 +148,32 @@ let make = _children => {
       )
     | SetAudio(audio) => ReasonReact.Update({...state, audio})
     | SetIntervalId(id) => ReasonReact.Update({...state, intervalId: id})
+    | SelectNextLightboxPhoto =>
+      ReasonReact.Update({
+        ...state,
+        lightboxPhoto:
+          state.lightboxPhoto
+          |. Belt.Option.map(((year, rowIndex)) =>
+               (
+                 year,
+                 Js.Math.min_int(
+                   ImageMetadata.countByYear
+                   |. Belt.Map.String.getExn(year)
+                   |> (x => x - 1),
+                   rowIndex + 1,
+                 ),
+               )
+             ),
+      })
+    | SelectPrevLightboxPhoto =>
+      ReasonReact.Update({
+        ...state,
+        lightboxPhoto:
+          state.lightboxPhoto
+          |. Belt.Option.map(((year, rowIndex)) =>
+               (year, Js.Math.max_int(0, rowIndex - 1))
+             ),
+      })
     | SetLightboxPhoto(photoInfo) =>
       ReasonReact.Update({...state, lightboxPhoto: photoInfo})
     | SetSong(song) => ReasonReact.Update({...state, currentSong: song})
@@ -165,70 +193,81 @@ let make = _children => {
       switch (keycode) {
       | 40 =>
         /* Down */
-        ReasonReact.UpdateWithSideEffects(
-          {
-            ...state,
-            focusedRowIndex:
-              Js.Math.min_int(
-                ImageMetadata.years |> Array.length |> (x => x - 1),
-                state.focusedRowIndex + 1,
-              ),
-          },
-          (
-            self => {
-              ensureFocusedRowIsScrolled(
-                ~yearsRef=self.state.yearsRef,
-                ~scrollLeftByYear=self.state.scrollLeftByYear,
-                ~focusedRowIndex=self.state.focusedRowIndex,
-              );
-              self.send(FocusRow(self.state.focusedRowIndex));
-            }
-          ),
-        )
+        state.lightboxPhoto |> Belt.Option.isSome ?
+          ReasonReact.NoUpdate :
+          ReasonReact.UpdateWithSideEffects(
+            {
+              ...state,
+              focusedRowIndex:
+                Js.Math.min_int(
+                  ImageMetadata.years |> Array.length |> (x => x - 1),
+                  state.focusedRowIndex + 1,
+                ),
+            },
+            (
+              self => {
+                ensureFocusedRowIsScrolled(
+                  ~yearsRef=self.state.yearsRef,
+                  ~scrollLeftByYear=self.state.scrollLeftByYear,
+                  ~focusedRowIndex=self.state.focusedRowIndex,
+                );
+                self.send(FocusRow(self.state.focusedRowIndex));
+              }
+            ),
+          )
       | 38 =>
         /* Up */
-        ReasonReact.UpdateWithSideEffects(
-          {
-            ...state,
-            focusedRowIndex: Js.Math.max_int(0, state.focusedRowIndex - 1),
-          },
-          (
-            self => {
-              ensureFocusedRowIsScrolled(
-                ~yearsRef=self.state.yearsRef,
-                ~scrollLeftByYear=self.state.scrollLeftByYear,
-                ~focusedRowIndex=self.state.focusedRowIndex,
-              );
-              self.send(FocusRow(self.state.focusedRowIndex));
-            }
-          ),
-        )
+        state.lightboxPhoto |> Belt.Option.isSome ?
+          ReasonReact.NoUpdate :
+          ReasonReact.UpdateWithSideEffects(
+            {
+              ...state,
+              focusedRowIndex: Js.Math.max_int(0, state.focusedRowIndex - 1),
+            },
+            (
+              self => {
+                ensureFocusedRowIsScrolled(
+                  ~yearsRef=self.state.yearsRef,
+                  ~scrollLeftByYear=self.state.scrollLeftByYear,
+                  ~focusedRowIndex=self.state.focusedRowIndex,
+                );
+                self.send(FocusRow(self.state.focusedRowIndex));
+              }
+            ),
+          )
       | 37 =>
         /* Left */
         ReasonReact.SideEffects(
           (
             self =>
-              ScrollButton.scrollRow(
-                ~refByYears=self.state.refByYears,
-                ~year=ImageMetadata.years[self.state.focusedRowIndex],
-                ~scrollLeftByYear=self.state.scrollLeftByYear,
-                ~scrollDelta=self.state.windowWidth *. (-0.7),
-              )
+              state.lightboxPhoto |> Belt.Option.isSome ?
+                self.send(SelectPrevLightboxPhoto) :
+                ScrollButton.scrollRow(
+                  ~refByYears=self.state.refByYears,
+                  ~year=ImageMetadata.years[self.state.focusedRowIndex],
+                  ~scrollLeftByYear=self.state.scrollLeftByYear,
+                  ~scrollDelta=self.state.windowWidth *. (-0.7),
+                )
           ),
         )
       | 39 =>
-        /* Left */
+        /* Right */
         ReasonReact.SideEffects(
           (
             self =>
-              ScrollButton.scrollRow(
-                ~refByYears=self.state.refByYears,
-                ~year=ImageMetadata.years[self.state.focusedRowIndex],
-                ~scrollLeftByYear=self.state.scrollLeftByYear,
-                ~scrollDelta=self.state.windowWidth *. 0.7,
-              )
+              state.lightboxPhoto |> Belt.Option.isSome ?
+                self.send(SelectNextLightboxPhoto) :
+                ScrollButton.scrollRow(
+                  ~refByYears=self.state.refByYears,
+                  ~year=ImageMetadata.years[self.state.focusedRowIndex],
+                  ~scrollLeftByYear=self.state.scrollLeftByYear,
+                  ~scrollDelta=self.state.windowWidth *. 0.7,
+                )
           ),
         )
+      | 27 =>
+        /* Escape */
+        ReasonReact.Update({...state, lightboxPhoto: None})
       | _ => ReasonReact.NoUpdate
       }
     | UnMute =>
@@ -360,13 +399,13 @@ let make = _children => {
               href="#"
               onClick=((_) => self.send(UnMute))
               style=(ReactDOMRe.Style.make(~color="palevioletred", ()))>
-              (ReasonReact.stringToElement("Unmute"))
+              (ReasonReact.string("Unmute"))
             </a> :
             <a
               href="#"
               onClick=((_) => self.send(Mute))
               style=(ReactDOMRe.Style.make(~color="palevioletred", ()))>
-              (ReasonReact.stringToElement("Mute"))
+              (ReasonReact.string("Mute"))
             </a>
         )
       </div>
@@ -374,6 +413,7 @@ let make = _children => {
         self.state.lightboxPhoto
         |. Belt.Option.map(((year, rowIndex)) =>
              <Lightbox
+               close=((_) => self.send(SetLightboxPhoto(None)))
                height=self.state.windowHeight
                path=(
                  year
@@ -381,10 +421,17 @@ let make = _children => {
                  |. Belt.Array.get(rowIndex)
                  |. Belt.Option.getWithDefault("")
                )
+               nextPhoto=(
+                 e => {
+                   ReactEventRe.Mouse.stopPropagation(e);
+                   self.send(SelectNextLightboxPhoto);
+                 }
+               )
+               prevPhoto=((_) => self.send(SelectPrevLightboxPhoto))
                width=self.state.windowWidth
              />
            )
-        |. Belt.Option.getWithDefault(ReasonReact.nullElement)
+        |. Belt.Option.getWithDefault(ReasonReact.null)
       )
     </div>,
 };

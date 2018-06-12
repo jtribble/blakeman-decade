@@ -23,7 +23,7 @@ let letterTextStyle = ReactDOMRe.Style.make(~textIndent="3em", ());
 let letterTitleStyle =
   ReactDOMRe.Style.make(~marginTop="0", ~textAlign="center", ());
 
-let str = ReasonReact.stringToElement;
+let str = ReasonReact.string;
 
 let make = _children => {
   ...component,
