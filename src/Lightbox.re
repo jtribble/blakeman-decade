@@ -38,8 +38,8 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
             ~backgroundColor="#000",
             ~opacity="0.7",
             ~position="absolute",
-            ~width=string_of_float(width) ++ "px",
-            ~height=string_of_float(height) ++ "px",
+            ~width=Window.floatToJsString(width) ++ "px",
+            ~height=Window.floatToJsString(height) ++ "px",
             ~zIndex="1",
             (),
           )
@@ -85,8 +85,8 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
             ~justifyContent="center",
             ~position="relative",
             ~zIndex="2",
-            ~width=string_of_float(width) ++ "px",
-            ~height=string_of_float(height) ++ "px",
+            ~width=Window.floatToJsString(width) ++ "px",
+            ~height=Window.floatToJsString(height) ++ "px",
             (),
           )
         )>
@@ -94,8 +94,8 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
           onClick=nextPhoto
           style=(
             ReactDOMRe.Style.make(
-              ~maxWidth=string_of_float(width -. 200.01) ++ "px",
-              ~maxHeight=string_of_float(height -. 50.01) ++ "px",
+              ~maxWidth=Window.floatToJsString(width -. 200.01) ++ "px",
+              ~maxHeight=Window.floatToJsString(height -. 50.01) ++ "px",
               (),
             )
           )

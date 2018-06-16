@@ -15,3 +15,6 @@ external removeEventListener : (string, unit => unit, bool) => unit = "";
 [@bs.val] external setTimeout : ((. unit) => unit, float) => int = "";
 
 [@bs.val] external clearInterval : int => float = "";
+
+let floatToJsString = num =>
+  string_of_float(num) ++ (floor(num) == num ? "0" : "");
