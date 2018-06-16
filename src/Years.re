@@ -419,15 +419,27 @@ let make = _children => {
         (
           self.state.isMuted ?
             <a
-              href="#"
               onClick=((_) => self.send(UnMute))
-              style=(ReactDOMRe.Style.make(~color="palevioletred", ()))>
+              style=(
+                ReactDOMRe.Style.make(
+                  ~cursor="pointer",
+                  ~textDecoration="underline",
+                  ~color="palevioletred",
+                  (),
+                )
+              )>
               (ReasonReact.string("Unmute"))
             </a> :
             <a
-              href="#"
               onClick=((_) => self.send(Mute))
-              style=(ReactDOMRe.Style.make(~color="palevioletred", ()))>
+              style=(
+                ReactDOMRe.Style.make(
+                  ~cursor="pointer",
+                  ~textDecoration="underline",
+                  ~color="palevioletred",
+                  (),
+                )
+              )>
               (ReasonReact.string("Mute"))
             </a>
         )
