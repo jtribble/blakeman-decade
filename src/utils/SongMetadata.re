@@ -9,7 +9,7 @@ type song = {
 external songMetadata : Js.Dict.t(Js.Array.t(song)) =
   "../constants/song-metadata.json";
 
-let getSongPath = song => "/assets/songs/" ++ song##song ++ ".mp3";
+let getSongPath = song => "./assets/songs/" ++ song##song ++ ".mp3";
 
 let getSong = (~year, ~duration) =>
   songMetadata

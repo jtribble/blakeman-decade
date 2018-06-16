@@ -31,7 +31,7 @@ let getImagePaths = (size, year) =>
   Belt.Map.String.getWithDefault(countByYear, year, 0)
   |> Belt.Array.makeBy(_, i => i + 1)
   |> Belt.Array.map(_, i =>
-       "/assets/"
+       "./assets/"
        ++ year
        ++ "/"
        ++ size
