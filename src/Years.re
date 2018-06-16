@@ -290,9 +290,7 @@ let make = _children => {
                 |. leftToIndex(state.focusedRowIndex),
               )),
         });
-      | x =>
-        Js.log(x);
-        ReasonReact.NoUpdate;
+      | _ => ReasonReact.NoUpdate
       }
     | UnMute =>
       ReasonReact.UpdateWithSideEffects(
