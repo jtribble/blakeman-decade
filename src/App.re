@@ -11,8 +11,8 @@ type state = {nowShowing: page};
 let component = ReasonReact.reducerComponent("App");
 
 let getPage = (url: ReasonReact.Router.url) =>
-  switch (url.path) {
-  | ["years"] => Years
+  switch (url.hash) {
+  | "years" => Years
   | _ => Intro
   };
 

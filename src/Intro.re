@@ -64,6 +64,6 @@ let make = _children => {
         )
       </p>
       <p style=letterSignatureStyle> (str("Love, David")) </p>
-      <a href="/years" style=linkStyle> (ReasonReact.string("Begin")) </a>
+      <a href="#years" style=linkStyle> (ReasonReact.string("Begin")) </a>
     </div>,
 };
