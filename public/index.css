@@ -16,6 +16,18 @@ body {
   background-color: #f2f2f2;
 }
 
+.chevron-button:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.chevron-button:active {
+  background-color: rgba(255, 255, 255);
+}
+
+.chevron-button {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
 .ReactVirtualized__Grid {
   outline: none;
 }

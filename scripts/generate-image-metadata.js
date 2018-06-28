@@ -3,7 +3,10 @@ const sizeOf = require("image-size");
 const fs = require("fs");
 const path = require("path");
 
-const years = fs.readdirSync(path.join(__dirname, "..", "src", "assets"));
+const years = R.filter(
+  maybeYear => String(Number(maybeYear)) === maybeYear,
+  fs.readdirSync(path.join(__dirname, "..", "src", "assets"))
+);
 
 const getImagesPath = year =>
   path.join(__dirname, "..", "src", "assets", year, "med");

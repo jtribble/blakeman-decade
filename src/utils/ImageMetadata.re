@@ -27,6 +27,17 @@ let countByYear =
 
 let years = imageMetadata |> Js.Dict.keys;
 
+let yearToRowIndex = year =>
+  years
+  |. Belt.Array.mapWithIndex((i, a) => (i, a))
+  |. Belt.Array.reduce(None, (acc, (i, a)) =>
+       switch (acc) {
+       | None => a == year ? Some(i) : None
+       | _ => acc
+       }
+     )
+  |> Belt.Option.getExn;
+
 let getImagePaths = (size, year) =>
   Belt.Map.String.getWithDefault(countByYear, year, 0)
   |> Belt.Array.makeBy(_, i => i + 1)

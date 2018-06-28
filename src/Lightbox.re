@@ -51,6 +51,7 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
         style=(
           ReactDOMRe.Style.make(
             ~color="#F2F2F2",
+            ~cursor="pointer",
             ~position="absolute",
             ~left="10px",
             ~zIndex="3",

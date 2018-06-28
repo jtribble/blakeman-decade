@@ -1,3 +1,11 @@
+let getRowWidth = year =>
+  ImageMetadata.countByYear
+  |. Belt.Map.String.getExn(year)
+  |. Belt.Array.makeBy(columnIndex =>
+       Photo.getColumnWidth(ImageMetadata.yearToRowIndex(year), columnIndex)
+     )
+  |. Belt.Array.reduce(0.0, (a, b) => a +. b);
+
 let scrollRow = (~refByYears, ~year, ~scrollLeftByYear, ~scrollDelta) =>
   refByYears^
   |> Belt.Map.String.getExn(_, year)
@@ -8,7 +16,8 @@ let scrollRow = (~refByYears, ~year, ~scrollLeftByYear, ~scrollDelta) =>
            "scrollLeft":
              Belt.Map.String.getExn(scrollLeftByYear, year)
              |> (left => left +. scrollDelta)
-             |> Js.Math.max_float(0.0),
+             |> Js.Math.max_float(0.0)
+             |> Js.Math.min_float(getRowWidth(year) *. 0.95),
            "scrollTop": 0.0,
          },
        ),
@@ -31,7 +40,7 @@ let make =
   ...component,
   render: (_) =>
     <i
-      className
+      className=(className ++ " chevron-button")
       onClick=(
         (_) => scrollRow(~refByYears, ~year, ~scrollLeftByYear, ~scrollDelta)
       )
@@ -39,9 +48,10 @@ let make =
         ReactDOMRe.Style.combine(
           style,
           ReactDOMRe.Style.make(
-            ~fontSize="30px",
+            ~color="black",
+            ~fontSize="25px",
+            ~padding="5px",
             ~position="absolute",
-            ~color="#555",
             ~cursor="pointer",
             ~zIndex="1",
             ~top="50%",
