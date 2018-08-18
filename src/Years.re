@@ -419,7 +419,7 @@ let make = _children => {
         (
           self.state.isMuted ?
             <a
-              onClick=((_) => self.send(UnMute))
+              onClick=(_ => self.send(UnMute))
               style=(
                 ReactDOMRe.Style.make(
                   ~cursor="pointer",
@@ -431,7 +431,7 @@ let make = _children => {
               (ReasonReact.string("Unmute"))
             </a> :
             <a
-              onClick=((_) => self.send(Mute))
+              onClick=(_ => self.send(Mute))
               style=(
                 ReactDOMRe.Style.make(
                   ~cursor="pointer",
@@ -448,7 +448,7 @@ let make = _children => {
         self.state.lightboxPhoto
         |. Belt.Option.map(((year, rowIndex)) =>
              <Lightbox
-               close=((_) => self.send(SetLightboxPhoto(None)))
+               close=(_ => self.send(SetLightboxPhoto(None)))
                height=self.state.windowHeight
                path=(
                  year
@@ -462,8 +462,9 @@ let make = _children => {
                    self.send(SelectNextLightboxPhoto);
                  }
                )
-               prevPhoto=((_) => self.send(SelectPrevLightboxPhoto))
+               prevPhoto=(_ => self.send(SelectPrevLightboxPhoto))
                width=self.state.windowWidth
+               year
              />
            )
         |. Belt.Option.getWithDefault(ReasonReact.null)

@@ -8,13 +8,14 @@ let component = ReasonReact.reducerComponent("Lightbox");
 let setLightboxRef = (r, {ReasonReact.state}) =>
   state.lightboxRef := Js.Nullable.toOption(r);
 
-let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) => {
+let make =
+    (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, ~year, _children) => {
   ...component,
   initialState: () => {lightboxRef: ref(None)},
   reducer: action =>
     switch (action) {
     | Focus => (
-        (_) =>
+        _ =>
           ReasonReact.SideEffects(
             ({state}) =>
               switch (state.lightboxRef^) {
@@ -36,7 +37,7 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
         style=(
           ReactDOMRe.Style.make(
             ~backgroundColor="#000",
-            ~opacity="0.7",
+            ~opacity="1",
             ~position="absolute",
             ~width=Window.floatToJsString(width) ++ "px",
             ~height=Window.floatToJsString(height) ++ "px",
@@ -45,6 +46,19 @@ let make = (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, _children) =
           )
         )
       />
+      <div
+        style=(
+          ReactDOMRe.Style.make(
+            ~color="white",
+            ~position="relative",
+            ~textAlign="center",
+            ~top="10px",
+            ~zIndex="1",
+            (),
+          )
+        )>
+        (year |. ReasonReact.string)
+      </div>
       <i
         className="fa fa-chevron-left"
         onClick=prevPhoto
