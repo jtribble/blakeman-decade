@@ -9,7 +9,21 @@ let setLightboxRef = (r, {ReasonReact.state}) =>
   state.lightboxRef := Js.Nullable.toOption(r);
 
 let make =
-    (~close, ~height, ~path, ~prevPhoto, ~nextPhoto, ~width, ~year, _children) => {
+    (
+      ~artist,
+      ~close,
+      ~height,
+      ~isMuted,
+      ~mute,
+      ~path,
+      ~prevPhoto,
+      ~nextPhoto,
+      ~song,
+      ~unmute,
+      ~width,
+      ~year,
+      _children,
+    ) => {
   ...component,
   initialState: () => {lightboxRef: ref(None)},
   reducer: action =>
@@ -46,6 +60,7 @@ let make =
           )
         )
       />
+      <SongLabel artist song isMuted mute unmute />
       <div
         style=(
           ReactDOMRe.Style.make(
