@@ -76,6 +76,8 @@ type action =
   | FocusRow(int)
   | KeyDown(int)
   | Mute
+  | PauseSong
+  | PlaySong
   | SelectNextLightboxPhoto
   | SelectPrevLightboxPhoto
   | SetAudio(Audio.t)
@@ -89,17 +91,16 @@ type action =
 
 let component = ReasonReact.reducerComponent("Years");
 
-let playSongForFocusedYear = ({audio, isMuted, lightboxPhoto} as state, send) => {
+let playSongForFocusedYear = ({audio, isMuted} as state) => {
   let (song, path, time) = getCurrentSong(state);
   audio |> Audio.pause;
   let audio = Audio.init(path);
-  if (isMuted || lightboxPhoto |. Belt.Option.isNone) {
+  if (isMuted) {
     audio |> Audio.mute;
   };
   Audio.setCurrentTime(audio, time);
   Audio.play(audio);
-  send(SetSong(song));
-  send(SetAudio(audio));
+  (song, audio);
 };
 
 let make = _children => {
@@ -137,17 +138,38 @@ let make = _children => {
   },
   reducer: (action, state) =>
     switch (action) {
-    | FocusRow(index) =>
-      ReasonReact.Update({...state, focusedRowIndex: index})
+    | PauseSong =>
+      ReasonReact.UpdateWithSideEffects(
+        {...state, durationByYear: updateDurationByYear(state)},
+        (self => self.state.audio |> Audio.pause),
+      )
+    | PlaySong =>
+      ReasonReact.UpdateWithSideEffects(
+        {...state, lastPlaySongTime: Js.Date.now()},
+        (
+          ({state, send}) =>
+            playSongForFocusedYear(state)
+            |. (
+              ((song, audio)) => {
+                send(SetSong(song));
+                send(SetAudio(audio));
+              }
+            )
+        ),
+      )
+
     | Mute =>
       ReasonReact.UpdateWithSideEffects(
-        {
-          ...state,
-          durationByYear: updateDurationByYear(state),
-          isMuted: true,
-        },
+        {...state, isMuted: true},
         (self => self.state.audio |> Audio.mute),
       )
+    | UnMute =>
+      ReasonReact.UpdateWithSideEffects(
+        {...state, isMuted: false},
+        (({state: {audio}}) => audio |. Audio.unMute),
+      )
+    | FocusRow(index) =>
+      ReasonReact.Update({...state, focusedRowIndex: index})
     | SetAudio(audio) => ReasonReact.Update({...state, audio})
     | SetIntervalId(id) => ReasonReact.Update({...state, intervalId: id})
     | SelectNextLightboxPhoto =>
@@ -180,21 +202,29 @@ let make = _children => {
       ReasonReact.UpdateWithSideEffects(
         {
           ...state,
-          durationByYear:
-            photoInfo
-            |. Belt.Option.isNone
-            && state.lightboxPhoto
-            |. Belt.Option.isSome ?
-              updateDurationByYear(state) : state.durationByYear,
-          lastPlaySongTime:
-            photoInfo
-            |. Belt.Option.isSome
-            && state.lightboxPhoto
-            |. Belt.Option.isNone ?
-              Js.Date.now() : state.lastPlaySongTime,
           lightboxPhoto: photoInfo,
+          focusedRowIndex:
+            photoInfo
+            |. Belt.Option.map(((year, _)) =>
+                 year |. ImageMetadata.yearToRowIndex
+               )
+            |. Belt.Option.getWithDefault(state.focusedRowIndex),
         },
-        (({state, send}) => playSongForFocusedYear(state, send)),
+        (
+          ({state: {lightboxPhoto}, send}) =>
+            (
+              lightboxPhoto |. Belt.Option.isSome,
+              state.lightboxPhoto |. Belt.Option.isSome,
+            )
+            |> (
+              ((hasLightboxPhoto, didHaveLightBoxPhoto)) =>
+                switch (hasLightboxPhoto, didHaveLightBoxPhoto) {
+                | (true, false) => send(PlaySong)
+                | (false, true) => send(PauseSong)
+                | _ => ()
+                }
+            )
+        ),
       )
     | SetSong(song) => ReasonReact.Update({...state, currentSong: song})
     | SetWindowSize =>
@@ -306,11 +336,6 @@ let make = _children => {
         );
       | _ => ReasonReact.NoUpdate
       }
-    | UnMute =>
-      ReasonReact.UpdateWithSideEffects(
-        {...state, isMuted: false},
-        (self => playSongForFocusedYear(self.state, self.send)),
-      )
     | UpdateSongMaybe =>
       ReasonReact.SideEffects(
         (
@@ -325,9 +350,11 @@ let make = _children => {
                   })
               );
             let (_, oldSongPath, _) = getCurrentSong(self.state);
-            if (newSongPath != oldSongPath) {
-              self.send(FocusRow(self.state.focusedRowIndex));
-              playSongForFocusedYear(self.state, self.send);
+            if (oldSongPath != newSongPath
+                && self.state.lightboxPhoto
+                |. Belt.Option.isSome) {
+              self.send(PauseSong);
+              self.send(PlaySong);
             };
           }
         ),
