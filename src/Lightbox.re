@@ -66,7 +66,9 @@ let make =
           ReactDOMRe.Style.make(
             ~color="white",
             ~position="relative",
-            ~textAlign="center",
+            ~fontSize="26px",
+            ~textAlign="left",
+            ~paddingLeft="20px",
             ~top="10px",
             ~zIndex="1",
             (),

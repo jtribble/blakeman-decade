@@ -8,19 +8,19 @@ let make = (~artist, ~isMuted, ~mute, ~song, ~unmute, _children) => {
         ReactDOMRe.Style.make(
           ~fontSize="16px",
           ~position="absolute",
-          ~padding="20px",
+          ~padding="15px",
           ~bottom="20px",
           ~right="20px",
-          ~backgroundColor="#fff",
-          ~color="#333",
-          ~display="flex",
-          ~alignItems="center",
+          ~textAlign="right",
+          ~backgroundColor="#333",
+          ~color="#fff",
           ~zIndex="3",
           (),
         )
       )>
       <div style=(ReactDOMRe.Style.make(~marginRight="10px", ()))>
-        (ReasonReact.string("\"" ++ song ++ "\"" ++ " by " ++ artist))
+        <div> (ReasonReact.string(song)) </div>
+        <div> (ReasonReact.string(artist)) </div>
       </div>
       (
         isMuted ?
