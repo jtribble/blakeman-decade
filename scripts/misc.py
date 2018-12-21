@@ -61,16 +61,17 @@ def resize_and_move_raw_edits():
         image_paths = [f for f in listdir(
             year_path) if isfile(join(year_path, f))]
         image_paths = map(lambda x: join(year_path, x), image_paths)
-        for i, im_path in enumerate(image_paths):
+        for im_path in image_paths:
+            i = int(im_path.split("-")[-1].split(".")[0])
             im_sm = Image.open(im_path)
             im_sm.thumbnail((500, 500), Image.ANTIALIAS)
             im_med = Image.open(im_path)
             im_med.thumbnail(
                 (6000, 6000), Image.ANTIALIAS)
             im_sm.save(
-                '/Users/kyle/git-projects/blakeman-decade/src/assets/{}/{}/{}-{}.jpg'.format(year, 'sm', year, i + 1), "JPEG")
+                '/Users/kyle/git-projects/blakeman-decade/src/assets/{}/{}/{}-{}.jpg'.format(year, 'sm', year, i), "JPEG")
             im_med.save(
-                '/Users/kyle/git-projects/blakeman-decade/src/assets/{}/{}/{}-{}.jpg'.format(year, 'med', year, i + 1), "JPEG")
+                '/Users/kyle/git-projects/blakeman-decade/src/assets/{}/{}/{}-{}.jpg'.format(year, 'med', year, i), "JPEG")
 
 
 if __name__ == "__main__":
